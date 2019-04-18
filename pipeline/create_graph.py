@@ -3,12 +3,11 @@ import pandas as pd
 from node2vec import Node2Vec
 from pathlib import Path
 
-def graph():
+def graph(nodepath,edgepath):
     #import nodes and edges from data as df
-    path_node = str(Path().absolute())
-    dfhimnode = pd.read_csv(path_node+'/original_graph_data/nodes.tsv',sep='\t')
-    path_edge = str(Path().absolute())
-    dfhimedge = pd.read_csv(path_edge+'/original_graph_data/edges.sif',sep='\t')
+
+    dfhimnode = pd.read_csv(nodepath,sep='\t')
+    dfhimedge = pd.read_csv(edgepath,sep='\t')
     
     # create graph
     himgraph = nx.Graph()
