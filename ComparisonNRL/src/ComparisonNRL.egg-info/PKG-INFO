@@ -1,0 +1,21 @@
+Metadata-Version: 1.2
+Name: ComparisonNRL
+Version: 0.0.4.dev0
+Summary: This package get to master thesis of Lingling Xu
+Home-page: www.lingling93.com
+Author: Lingling Xu
+Author-email: linglingxu993@gmail.com
+License: MIT Lisense
+Description: master_thesis
+        ==============
+        This package gets the master theis of Lingling Xu
+        
+        Installation
+        -------------
+        
+Keywords: lingling,thesis,NRL
+Platform: UNKNOWN
+Classifier: Lisence :: OSI Approved :: MIT Lisence
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3.7
+Requires-Python: >=3.6
