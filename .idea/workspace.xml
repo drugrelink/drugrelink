@@ -2,16 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="f9952845-01fc-4b0d-92a6-b9b463069bca" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/comparison.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/comparison.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/node2vec/notebooks/Untitled.ipynb" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/node2vec/test.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/node2vec/test.ipynb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/repositioning_comparison/cli.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/repositioning_comparison/cli.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/repositioning_comparison/create_graph.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/repositioning_comparison/create_graph.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/repositioning_comparison/download.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/repositioning_comparison/download.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/repositioning_comparison/pairs.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/repositioning_comparison/pairs.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/repositioning_comparison/subgraph.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/repositioning_comparison/subgraph.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -36,8 +30,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/repositioning_comparison/subgraph.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="120">
-              <caret line="8" column="30" lean-forward="true" selection-start-line="8" selection-end-line="9" selection-end-column="58" />
+            <state relative-caret-position="240">
+              <caret line="16" column="34" selection-start-line="16" selection-start-column="34" selection-end-line="16" selection-end-column="34" />
               <folding>
                 <element signature="e#0#14#0" expanded="true" />
               </folding>
@@ -49,7 +43,7 @@
         <entry file="file://$PROJECT_DIR$/src/repositioning_comparison/pairs.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="435">
-              <caret line="29" lean-forward="true" selection-start-line="29" selection-end-line="29" />
+              <caret line="29" selection-start-line="29" selection-end-line="29" />
               <folding>
                 <element signature="e#0#14#0" expanded="true" />
               </folding>
@@ -66,22 +60,25 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/repositioning_comparison/download.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="523">
-              <caret line="48" column="88" lean-forward="true" selection-start-line="48" selection-start-column="88" selection-end-line="48" selection-end-column="88" />
+            <state relative-caret-position="238">
+              <caret line="36" column="39" selection-start-line="36" selection-start-column="4" selection-end-line="36" selection-end-column="42" />
+              <folding>
+                <element signature="e#47#61#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/repositioning_comparison/cli.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-242">
-              <caret line="28" column="39" lean-forward="true" selection-start-line="28" selection-start-column="39" selection-end-line="28" selection-end-column="39" />
+            <state relative-caret-position="405">
+              <caret line="66" column="40" selection-start-line="66" selection-start-column="40" selection-end-line="66" selection-end-column="40" />
               <folding>
-                <element signature="e#0#12#0" expanded="true" />
+                <element signature="e#0#9#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -109,8 +106,8 @@
       <list>
         <option value="$PROJECT_DIR$/src/repositioning_comparison/create_graph.py" />
         <option value="$PROJECT_DIR$/src/repositioning_comparison/subgraph.py" />
-        <option value="$PROJECT_DIR$/src/repositioning_comparison/download.py" />
         <option value="$PROJECT_DIR$/src/repositioning_comparison/pairs.py" />
+        <option value="$PROJECT_DIR$/src/repositioning_comparison/download.py" />
         <option value="$PROJECT_DIR$/src/repositioning_comparison/cli.py" />
       </list>
     </option>
@@ -136,18 +133,13 @@
             <path>
               <item name="comparison" type="b2602c69:ProjectViewProjectNode" />
               <item name="comparison" type="462c0819:PsiDirectoryNode" />
-              <item name="data" type="462c0819:PsiDirectoryNode" />
+              <item name="results" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="comparison" type="b2602c69:ProjectViewProjectNode" />
               <item name="comparison" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="comparison" type="b2602c69:ProjectViewProjectNode" />
-              <item name="comparison" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="repositioning_comparison" type="462c0819:PsiDirectoryNode" />
+              <item name="results" type="462c0819:PsiDirectoryNode" />
+              <item name="subgraph_node2vec" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -203,37 +195,10 @@
     </layout>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/repositioning_comparison/create_graph.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="345">
-          <caret line="23" selection-start-line="23" selection-end-line="23" />
-          <folding>
-            <element signature="e#0#14#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/repositioning_comparison/nodetovec.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="73">
-          <caret line="13" selection-start-line="13" selection-end-line="13" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/repositioning_comparison/cli.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-242">
-          <caret line="28" column="39" lean-forward="true" selection-start-line="28" selection-start-column="39" selection-end-line="28" selection-end-column="39" />
-          <folding>
-            <element signature="e#0#12#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/repositioning_comparison/pairs.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="435">
-          <caret line="29" lean-forward="true" selection-start-line="29" selection-end-line="29" />
+          <caret line="29" selection-start-line="29" selection-end-line="29" />
           <folding>
             <element signature="e#0#14#0" expanded="true" />
           </folding>
@@ -252,18 +217,57 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/repositioning_comparison/subgraph.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="120">
-          <caret line="8" column="30" lean-forward="true" selection-start-line="8" selection-end-line="9" selection-end-column="58" />
+        <state relative-caret-position="240">
+          <caret line="16" column="34" selection-start-line="16" selection-start-column="34" selection-end-line="16" selection-end-column="34" />
           <folding>
             <element signature="e#0#14#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/repositioning_comparison/create_graph.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="345">
+          <caret line="23" selection-start-line="23" selection-end-line="23" />
+          <folding>
+            <element signature="e#0#14#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/repositioning_comparison/nodetovec.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="73">
+          <caret line="13" selection-start-line="13" selection-end-line="13" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/repositioning_comparison/download.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="523">
-          <caret line="48" column="88" lean-forward="true" selection-start-line="48" selection-start-column="88" selection-end-line="48" selection-end-column="88" />
+        <state relative-caret-position="238">
+          <caret line="36" column="39" selection-start-line="36" selection-start-column="4" selection-end-line="36" selection-end-column="42" />
+          <folding>
+            <element signature="e#47#61#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/results/subgraph_node2vec/test">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/results/subgraph_node2vec/train">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/results/subgraph_node2vec/metadata">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/repositioning_comparison/cli.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="405">
+          <caret line="66" column="40" selection-start-line="66" selection-start-column="40" selection-end-line="66" selection-end-column="40" />
+          <folding>
+            <element signature="e#0#9#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
