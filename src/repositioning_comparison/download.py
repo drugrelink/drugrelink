@@ -15,6 +15,7 @@ DIRECTORY = os.environ.get('REPOSITIONING_COMPARISON_DIRECTORY', DEFAULT_DIRECTO
 NODE_DATA_URL = 'https://raw.githubusercontent.com/dhimmel/integrate/master/data/nodes.tsv'
 EDGE_DATA_URL = 'https://raw.githubusercontent.com/dhimmel/integrate/master/data/edges.sif.gz'
 TRANSFORMED_FEATURES_URL = 'https://github.com/dhimmel/learn/blob/master/prediction/features/transformed-features.tsv.bz2?raw=true'
+VALIDATE_DATA_URL = 'https://github.com/dhimmel/learn/blob/master/validate/validation-statuses.tsv'
 
 
 def ensure_data(directory: Optional[str] = None) -> Tuple[str, str, str]:
@@ -39,4 +40,10 @@ def ensure_data(directory: Optional[str] = None) -> Tuple[str, str, str]:
         logger.warning(f'downloading {TRANSFORMED_FEATURES_URL}')
         urlretrieve(TRANSFORMED_FEATURES_URL, TRANSFORMED_FEATURES_PATH)
 
-    return NODE_DATA_PATH, EDGE_DATA_PATH, TRANSFORMED_FEATURES_PATH
+    VALIDATE_DATA_PATH = os.path.join(directory, 'validation-statuses.tsv')
+    if not os.path.exists(VALIDATE_DATA_PATH):
+        logger.warning(f'downloading {VALIDATE_DATA_PATH}')
+        urlretrieve(VALIDATE_DATA_URL, VALIDATE_DATA_PATH)
+
+
+    return NODE_DATA_PATH, EDGE_DATA_PATH, TRANSFORMED_FEATURES_PATH, VALIDATE_DATA_PATH

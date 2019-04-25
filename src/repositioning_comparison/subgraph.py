@@ -2,13 +2,12 @@ import tarfile
 
 import networkx as nx
 import pandas as pd
+import bz2
 
 
 def subgraph(path, graph, cutoff, pnumber, nnumber):
-    tar = tarfile.open(path, "r:gz")
-    for member in tar.getmembers():
-        f = tar.extractfile(member)
-        df_features = pd.read_csv(f, sep='\t', low_memory=False)
+    f =  bz2.BZ2File(path,'r')
+    df_features = pd.read_csv(f,sep='\t',low_memory=False)
     df_positive = df_features.loc[df_features['status'] == 1][0:pnumber]
     df_negative = df_features.loc[df_features['status'] == 0][0:nnumber]
     subgraph_nodeslist = []

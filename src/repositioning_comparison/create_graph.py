@@ -2,16 +2,15 @@ import tarfile
 
 import networkx as nx
 import pandas as pd
+import gzip
 
 
 def create_himmelstein_graph(nodepath, edgepath):
     # import nodes and edges from data as df
 
     dfhimnode = pd.read_csv(nodepath, sep='\t')
-    tar = tarfile.open(edgepath, "r:gz")
-    for member in tar.getmembers():
-        f = tar.extractfile(member)
-        dfhimedge = pd.read_csv(f, sep='\t')
+    f = gzip.open(edgepath,'rb')
+    dfhimedge = pd.read_csv(f,sep='\t')
 
     # create graph
     himgraph = nx.Graph()
