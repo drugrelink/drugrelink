@@ -9,4 +9,4 @@ download this repository
 CLI Usage
 ---------
 To run with subgraph
-$ epositioning-comparion subgraph
+$ repositioning-comparion subgraph
