@@ -129,6 +129,57 @@ def run_node2vec_subgraph(
 
     train_vectors = positive_vectors[:n_train_positive] + negative_vectors[:n_train_negative]
     train_labels = positive_labels[:n_train_positive] + negative_labels[:n_train_negative]
+    test_vectors = positive_vectors[n_train_positive:] + negative_vectors[n_train_negative:]
+    test_labels = positive_labels[n_train_positive:] + negative_labels[n_train_negative:]
+
+    _train_evaluate_generate_artifacts(output_directory, train_vectors, train_labels, test_vectors, test_labels)
+
+
+def run_node2vec(
+        *,
+        node_path,
+        edge_path,
+        feature_path,
+        validate_path,
+        output_directory,
+        embedder_function: EmbedderFunction,
+) -> None:
+    if not os.path.exists(output_directory):
+        os.mkdir(output_directory)
+
+    graph = create_himmelstein_graph(node_path, edge_path)
+
+    model = fit_node2vec(graph)
+
+    train_list, train_labels = train_pairs(feature_path)
+    train_vectors = embedder_function(model, train_list)
+    test_list, test_labels = test_pairs(validate_path)
+    test_vectors = embedder_function(model, test_list)
+
+    _train_evaluate_generate_artifacts(output_directory, train_vectors, train_labels, test_vectors, test_labels)
+
+
+def write_metadata(output_directory, graph_type, method, embedder):
+    with open(os.path.join(output_directory, 'metadata.txt'), 'w') as file:
+        json.dump(
+            {
+                'graph': graph_type,
+                'method': method,
+                'embedder': embedder,
+            },
+            file,
+            indent=2,
+            sort_keys=True,
+        )
+
+
+def _train_evaluate_generate_artifacts(
+        output_directory,
+        train_vectors,
+        train_labels,
+        test_vectors,
+        test_labels,
+) -> None:
     with open(os.path.join(output_directory, 'train.json'), 'w') as file:
         json.dump(
             [
@@ -140,8 +191,6 @@ def run_node2vec_subgraph(
             sort_keys=True,
         )
 
-    test_vectors = positive_vectors[n_train_positive:] + negative_vectors[n_train_negative:]
-    test_labels = positive_labels[n_train_positive:] + negative_labels[n_train_negative:]
     with open(os.path.join(output_directory, 'test.json'), 'w') as file:
         json.dump(
             [
@@ -168,55 +217,4 @@ def run_node2vec_subgraph(
             file,
             sort_keys=True,
             indent=2,
-        )
-
-
-def run_node2vec(
-        *,
-        node_path,
-        edge_path,
-        feature_path,
-        validate_path,
-        output_directory,
-        embedder_function: EmbedderFunction,
-) -> None:
-    if not os.path.exists(output_directory):
-        os.mkdir(output_directory)
-
-    wholegraph = create_himmelstein_graph(node_path, edge_path)
-
-    model = fit_node2vec(graph)
-
-    train_list, train_labels = train_pairs(feature_path)
-    train_vecs = embedder_function(model, train_list)
-    train_data = [train_vecs, train_labels]
-    with open(os.path.join(output_directory, 'train.json'), 'w') as train_file:
-        json.dump(train_data, train_file, indent=2, sort_keys=True)
-
-    test_list, test_labels = test_pairs(validate_path)
-    test_vecs = embedder_function(model, test_list)
-    test_data = [test_vecs, test_labels]
-    with open(os.path.join(output_directory, 'test.json'), 'w') as test_file:
-        json.dump(test_data, test_file, indent=2, sort_keys=True)
-
-    lg = train_logistic_regression(train_vecs, train_labels)
-    with open(os.path.join(output_directory, 'model.joblib'), 'wb') as model_file:
-        joblib.dump(lg, model_file)
-
-    roc = validate(lg, test_vecs, test_labels)
-    with open(os.path.join(output_directory, 'validate.txt'), 'w') as validate_file:
-        print(f'ROC: {roc}', file=validate_file)
-
-
-def write_metadata(output_directory, graph_type, method, embedder):
-    with open(os.path.join(output_directory, 'metadata.txt'), 'w') as file:
-        json.dump(
-            {
-                'graph': graph_type,
-                'method': method,
-                'embedder': embedder,
-            },
-            file,
-            indent=2,
-            sort_keys=True,
         )
