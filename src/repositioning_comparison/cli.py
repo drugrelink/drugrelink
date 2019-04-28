@@ -10,6 +10,7 @@ from .nodetovec import nodetovec, HadamardEmbedder, AverageEmbedder, WeightedL1E
 from .pairs import train_pairs, test_pairs
 from .subgraph import subgraph
 from .train import train, validate
+from .permutation_convert import convert
 
 GRAPH_TYPES = ['subgraph', 'wholegraph', 'permutation1', 'permutation2', 'permutation3', 'permutation4', 'permutation5']
 EMBEDDERS = {
@@ -48,6 +49,10 @@ def main(graphtype, data_directory, output_directory, method, embedder):
         data = metadata(graphtype, method, embedder)
         result = graph_node2vec(wholegraph, wholegraph_node2vec_directory,featurepath, validatepath, embedder, data)
         click.echo(f'Result: {result}')
+    elif graphtype == "permutation1" and method == "node2vec":
+        graph = convert(permutation_paths[0],1)
+        return 0
+
 
 
 def subgraph_node2vec(nodepath, edgepath, featurepath, embedder, output_directory, data):

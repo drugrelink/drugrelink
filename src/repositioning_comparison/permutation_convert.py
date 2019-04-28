@@ -1,0 +1,31 @@
+import os
+from hetio import readwrite
+import hetio
+import networkx as nx
+import pandas as pd
+import bz2
+
+HERE = os.path.abspath(os.path.dirname(__file__))
+DEFAULT_DIRECTORY = os.path.abspath(os.path.join(HERE, os.pardir, os.pardir, 'data','permutations'))
+PERMUTATION_DIRECTORY = os.environ.get('REPOSITIONING_COMPARISON_DIRECTORY', DEFAULT_DIRECTORY)
+
+
+def convert (path,order):
+
+
+    him_per= readwrite.read_graph(path)
+    with open (PERMUTATION_DIRECTORY,'permutation_node'+str(order)+'.tsv') as node_path:
+        hetio.readwrite.write_nodetable(him_per, node_path)
+    with open (PERMUTATION_DIRECTORY,'permutation_edge'+str(order)+'.sif.gz') as edge_path:
+        hetio.readwrite.write_sif(him_per, edge_path)
+    dfhimnode= pd.read_csv(node_path,sep='\t')
+
+    dfhimedge = pd.read_csv(edge_path,sep='\t')
+
+    himgraph = nx.Graph()
+    for index,row in dfhimnode.iterrows():
+        if row['id'] not in himgraph.nodes():
+            himgraph.add_node(row['id'],name= row['name'],kind=row['kind'])
+    for index,row in dfhimedge.iterrows():
+        himgraph.add_edge(row['source'],row['target'],metaedge = row['metaedge'])
+    return himgraph
