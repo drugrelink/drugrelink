@@ -1,13 +1,14 @@
+# -*- coding: utf-8 -*-
 
+import bz2
 
 import networkx as nx
 import pandas as pd
-import bz2
 
 
-def subgraph(path, graph, cutoff, pnumber, nnumber):
-    f =  bz2.BZ2File(path,'r')
-    df_features = pd.read_csv(f,sep='\t',low_memory=False)
+def generate_subgraph(path, graph, *, cutoff, pnumber, nnumber):
+    f = bz2.BZ2File(path, 'r')
+    df_features = pd.read_csv(f, sep='\t', low_memory=False)
     df_positive = df_features.loc[df_features['status'] == 1][0:pnumber]
     df_negative = df_features.loc[df_features['status'] == 0][0:nnumber]
     subgraph_nodeslist = []

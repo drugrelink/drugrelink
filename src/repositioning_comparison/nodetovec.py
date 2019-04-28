@@ -1,53 +1,48 @@
-""""""
+# -*- coding: utf-8 -*-
 
-from typing import Iterable, Tuple, List, Type
+from functools import partial
+from typing import Iterable, List, Tuple, Type
 
 import gensim
 import networkx
 import node2vec
+import node2vec.edges
+
+__all__ = [
+    'fit_node2vec',
+    'embed_hadamard',
+    'embed_average',
+    'embed_weighted_l1',
+    'embed_weighted_l2',
+]
 
 
-def nodetovec(graph: networkx.Graph) -> gensim.models.Word2Vec:
-    n_model = node2vec.Node2Vec(graph, dimensions=64, walk_length=30, num_walks=200, workers=4)
-    model = n_model.fit(window=10, min_count=1, batch_words=4)
-    return model
+def fit_node2vec(graph: networkx.Graph) -> gensim.models.Word2Vec:
+    node2vec_model = node2vec.Node2Vec(graph, dimensions=64, walk_length=30, num_walks=200, workers=4)
+    word2vec_model = node2vec_model.fit(window=10, min_count=1, batch_words=4)
+    return word2vec_model
 
 
-def _get_edge_vectors(
-        model: node2vec.Node2Vec,
+def embed(
+        word2vec_model: gensim.models.Word2Vec,
         pair_list: Iterable[Tuple[str, str]],
-        embedder: Type[node2vec.edges.EdgeEmbedder],
+        edge_embedder_cls: Type[node2vec.edges.EdgeEmbedder],
 ) -> List:
     """
 
-    :param model:
+    :param word2vec_model:
     :param pair_list:
+    :param edge_embedder_cls: Which :class:`node2vec.edges.EdgeEmbedder` from :mod:`node2vec.edges` to use.
     :return:
     """
-    edges_embs = embedder(keyed_vectors=model.wv)
+    edge_embeddings = edge_embedder_cls(keyed_vectors=word2vec_model.wv)
     return [
-        edges_embs[(node1, node2)].tolist()
+        edge_embeddings[node1, node2].tolist()
         for node1, node2 in pair_list
     ]
 
 
-def HadamardEmbedder(model: node2vec.Node2Vec, pair_list: Iterable[Tuple]):
-    """
-
-    :param model:
-    :param pair_list:
-    :return:
-    """
-    return _get_edge_vectors(model, pair_list, node2vec.edges.HadamardEmbedder)
-
-
-def AverageEmbedder(model: node2vec.Node2Vec, pair_list):
-    return _get_edge_vectors(model, pair_list, node2vec.edges.AverageEmbedder)
-
-
-def WeightedL1Embedder(model: node2vec.Node2Vec, pair_list):
-    return _get_edge_vectors(model, pair_list, node2vec.edges.WeightedL1Embedder)
-
-
-def WeightedL2Embedder(model: node2vec.Node2Vec, pair_list):
-    return _get_edge_vectors(model, pair_list, node2vec.edges.WeightedL2Embedder)
+embed_hadamard = partial(embed, edge_embedder_cls=node2vec.edges.HadamardEmbedder)
+embed_average = partial(embed, edge_embedder_cls=node2vec.edges.AverageEmbedder)
+embed_weighted_l1 = partial(embed, edge_embedder_cls=node2vec.edges.WeightedL1Embedder)
+embed_weighted_l2 = partial(embed, edge_embedder_cls=node2vec.edges.WeightedL2Embedder)

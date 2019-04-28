@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """Helper functions for getting resources."""
 
 import logging

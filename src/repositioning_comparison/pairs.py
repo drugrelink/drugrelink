@@ -1,11 +1,13 @@
+# -*- coding: utf-8 -*-
 
+import bz2
 
 import pandas as pd
 
 
 def train_pairs(path):
-    f =  bz2.BZ2File(path,'r')
-    df_features = pd.read_csv(f,sep='\t',low_memory=False)
+    f = bz2.BZ2File(path, 'r')
+    df_features = pd.read_csv(f, sep='\t', low_memory=False)
 
     train_list = []
     train_label = []

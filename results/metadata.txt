@@ -1,0 +1,5 @@
+{
+  "embedder": "hadamard",
+  "graph": "subgraph",
+  "method": "node2vec"
+}
