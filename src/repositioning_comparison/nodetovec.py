@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from functools import partial
-from typing import Iterable, List, Tuple, Type
+from typing import Callable, Iterable, List, Tuple, Type
 
 import gensim
 import networkx
@@ -10,6 +10,7 @@ import node2vec.edges
 
 __all__ = [
     'fit_node2vec',
+    'EmbedderFunction',
     'embed_hadamard',
     'embed_average',
     'embed_weighted_l1',
@@ -17,10 +18,13 @@ __all__ = [
 ]
 
 
-def fit_node2vec(graph: networkx.Graph) -> gensim.models.Word2Vec:
-    node2vec_model = node2vec.Node2Vec(graph, dimensions=64, walk_length=30, num_walks=200, workers=4)
+def fit_node2vec(graph: networkx.Graph, workers: int = 4) -> gensim.models.Word2Vec:
+    node2vec_model = node2vec.Node2Vec(graph, dimensions=64, walk_length=30, num_walks=200, workers=workers)
     word2vec_model = node2vec_model.fit(window=10, min_count=1, batch_words=4)
     return word2vec_model
+
+
+EmbedderFunction = Callable[[gensim.models.Word2Vec, Iterable[Tuple[str, str]]], List]
 
 
 def embed(

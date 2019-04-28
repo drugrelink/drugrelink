@@ -35,36 +35,36 @@ def ensure_data(directory: Optional[str] = None) -> Tuple[str, str, str, str, Li
 
     os.makedirs(directory, exist_ok=True)
 
-    NODE_DATA_PATH = os.path.join(directory, 'nodes.tsv')
-    if not os.path.exists(NODE_DATA_PATH):
+    node_data_path = os.path.join(directory, 'nodes.tsv')
+    if not os.path.exists(node_data_path):
         logger.warning(f'downloading {NODE_DATA_URL}')
-        urlretrieve(NODE_DATA_URL, NODE_DATA_PATH)
+        urlretrieve(NODE_DATA_URL, node_data_path)
 
-    EDGE_DATA_PATH = os.path.join(directory, 'edges.sif.gz')
-    if not os.path.exists(EDGE_DATA_PATH):
+    edge_data_path = os.path.join(directory, 'edges.sif.gz')
+    if not os.path.exists(edge_data_path):
         logger.warning(f'downloading {EDGE_DATA_URL}')
-        urlretrieve(EDGE_DATA_URL, EDGE_DATA_PATH)
+        urlretrieve(EDGE_DATA_URL, edge_data_path)
 
-    TRANSFORMED_FEATURES_PATH = os.path.join(directory, 'transformed-features.tsv.bz2')
-    if not os.path.exists(TRANSFORMED_FEATURES_PATH):
+    transformed_features_path = os.path.join(directory, 'transformed-features.tsv.bz2')
+    if not os.path.exists(transformed_features_path):
         logger.warning(f'downloading {TRANSFORMED_FEATURES_URL}')
-        urlretrieve(TRANSFORMED_FEATURES_URL, TRANSFORMED_FEATURES_PATH)
+        urlretrieve(TRANSFORMED_FEATURES_URL, transformed_features_path)
 
-    VALIDATE_DATA_PATH = os.path.join(directory, 'validation-statuses.tsv')
-    if not os.path.exists(VALIDATE_DATA_PATH):
+    validate_data_path = os.path.join(directory, 'validation-statuses.tsv')
+    if not os.path.exists(validate_data_path):
         logger.warning(f'downloading {VALIDATE_DATA_URL}')
-        urlretrieve(VALIDATE_DATA_URL, VALIDATE_DATA_PATH)
+        urlretrieve(VALIDATE_DATA_URL, validate_data_path)
 
-    PERMUTATION_DIRECTORY = os.path.join(directory, "permutations")
-    os.makedirs(PERMUTATION_DIRECTORY, exist_ok=True)
+    permutation_directory = os.path.join(directory, "permutations")
+    os.makedirs(permutation_directory, exist_ok=True)
 
     permutation_paths = []
     for i in range(5):
-        permutation_data_path = os.path.join(PERMUTATION_DIRECTORY, PERMUTATION_DATA_FILE_FMT.format(i + 1))
+        permutation_data_path = os.path.join(permutation_directory, PERMUTATION_DATA_FILE_FMT.format(i + 1))
         if not os.path.exists(permutation_data_path):
             url = PERMUTATION_DATA_URL_FMT.format(i + 1)
             logger.warning(f'downloading {url}')
             urlretrieve(url, permutation_data_path)
         permutation_paths.append(permutation_data_path)
 
-    return NODE_DATA_PATH, EDGE_DATA_PATH, TRANSFORMED_FEATURES_PATH, VALIDATE_DATA_PATH, permutation_paths
+    return node_data_path, edge_data_path, transformed_features_path, validate_data_path, permutation_paths
