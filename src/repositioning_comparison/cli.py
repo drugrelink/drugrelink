@@ -8,20 +8,19 @@ from typing import Mapping
 import click
 import joblib
 
+from . import embedders
 from .create_graph import create_himmelstein_graph
 from .download import DIRECTORY, ensure_data
-from .nodetovec import (
-    EmbedderFunction, embed_average, embed_hadamard, embed_weighted_l1, embed_weighted_l2,
-    fit_node2vec,
-)
+from .node2vec_utils import fit_node2vec
 from .pairs import test_pairs, train_pairs
 from .permutation_convert import convert
 from .subgraph import generate_subgraph
 from .train import train_logistic_regression, validate
+from .typing import EmbedderFunction
 
 DEFAULT_GRAPH_TYPE = 'subgraph'
 GRAPH_TYPES = [
-    'wholegraph',
+    'graph',
     'subgraph',
     'permutation1',
     'permutation2',
@@ -31,10 +30,10 @@ GRAPH_TYPES = [
 ]
 
 EMBEDDERS: Mapping[str, EmbedderFunction] = {
-    'hadamard': embed_hadamard,
-    'average': embed_average,
-    'weighted_l1': embed_weighted_l1,
-    'weighted_l2': embed_weighted_l2,
+    'hadamard': embedders.hadamard,
+    'average': embedders.average,
+    'weighted_l1': embedders.weighted_l1,
+    'weighted_l2': embedders.weighted_l2,
 }
 
 HERE = os.path.abspath(os.path.dirname(__file__))
@@ -43,17 +42,18 @@ RESULTS_DIRECTORY = os.environ.get('REPOSITIONING_COMPARISON_DIRECTORY', DEFAULT
 
 
 @click.command()
-@click.option('-t', '--graph-type', type=click.Choice(GRAPH_TYPES), default=DEFAULT_GRAPH_TYPE)
+@click.option('-t', '--graph-type', type=click.Choice(GRAPH_TYPES), default=DEFAULT_GRAPH_TYPE, show_default=True)
 @click.option('--data-directory', type=click.Path(dir_okay=True, file_okay=False), default=DIRECTORY, show_default=True)
 @click.option('-d', '--output-directory', type=click.Path(dir_okay=True, file_okay=False), default=RESULTS_DIRECTORY,
               help='Output directory. Defaults to current working directory.', show_default=True)
-@click.option('--method', default='node2vec', type=click.Choice(['node2vec', 'edge2vec', 'metapath2vec']))
-@click.option('--embedder', default='hadamard', type=click.Choice(list(EMBEDDERS)))
+@click.option('--method', default='node2vec', type=click.Choice(['node2vec', 'edge2vec', 'metapath2vec']),
+              show_default=True)
+@click.option('--embedder', default='hadamard', type=click.Choice(list(EMBEDDERS)), show_default=True)
 def main(graph_type: str, data_directory: str, output_directory: str, method: str, embedder: str):
     """This cli runs the ComparisonNRL."""
     node_path, edge_path, feature_path, validate_path, permutation_paths = ensure_data(directory=data_directory)
 
-    embedder_function: EmbedderFunction = EMBEDDERS[embedder]
+    embedder_function = EMBEDDERS[embedder]
 
     # TODO add random seed as argument
 
@@ -61,7 +61,6 @@ def main(graph_type: str, data_directory: str, output_directory: str, method: st
     if method == 'node2vec':
         if graph_type == 'subgraph':
             subgraph_node2vec_directory = os.path.join(output_directory, 'node2vec_subgraph')
-            write_metadata(subgraph_node2vec_directory, graph_type, method, embedder)
             run_node2vec_subgraph(
                 node_path=node_path,
                 edge_path=edge_path,
@@ -70,16 +69,15 @@ def main(graph_type: str, data_directory: str, output_directory: str, method: st
                 output_directory=subgraph_node2vec_directory,
             )
 
-        elif graph_type == 'wholegraph':
-            wholegraph_node2vec_directory = os.path.join(output_directory, 'node2vec')
-            write_metadata(wholegraph_node2vec_directory, graph_type, method, embedder)
+        elif graph_type == 'graph':
+            node2vec_directory = os.path.join(output_directory, 'node2vec')
             run_node2vec(
                 node_path=node_path,
                 edge_path=edge_path,
                 feature_path=feature_path,
                 validate_path=validate_path,
                 embedder_function=embedder_function,
-                output_directory=wholegraph_node2vec_directory,
+                output_directory=node2vec_directory,
             )
 
         elif graph_type == "permutation1":
@@ -101,11 +99,25 @@ def run_node2vec_subgraph(
         feature_path,
         embedder_function: EmbedderFunction,
         output_directory,
-        n_train_positive: int = 5,
-        n_train_negative: int = 15,
+        n_train_positive: int = 3 * 5,
+        n_train_negative: int = 3 * 15,
 ) -> None:
     if not os.path.exists(output_directory):
         os.mkdir(output_directory)
+
+    with open(os.path.join(output_directory, 'metadata.json'), 'w') as file:
+        json.dump(
+            {
+                'graph': 'subgraph',
+                'method': 'node2vec',
+                'embedder': embedder_function.func.__name__,
+                'n_train_positive': n_train_positive,
+                'n_train_negative': n_train_negative,
+            },
+            file,
+            indent=2,
+            sort_keys=True,
+        )
 
     click.echo('creating graph')
     graph = create_himmelstein_graph(node_path, edge_path)
@@ -152,25 +164,12 @@ def run_node2vec(
     model = fit_node2vec(graph)
 
     train_list, train_labels = train_pairs(feature_path)
+    #  TODO why build multiple embedders separately and not single one then split vectors after the fact?
     train_vectors = embedder_function(model, train_list)
     test_list, test_labels = test_pairs(validate_path)
     test_vectors = embedder_function(model, test_list)
 
     _train_evaluate_generate_artifacts(output_directory, train_vectors, train_labels, test_vectors, test_labels)
-
-
-def write_metadata(output_directory, graph_type, method, embedder):
-    with open(os.path.join(output_directory, 'metadata.txt'), 'w') as file:
-        json.dump(
-            {
-                'graph': graph_type,
-                'method': method,
-                'embedder': embedder,
-            },
-            file,
-            indent=2,
-            sort_keys=True,
-        )
 
 
 def _train_evaluate_generate_artifacts(
