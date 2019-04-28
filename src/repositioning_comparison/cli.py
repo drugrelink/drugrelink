@@ -30,7 +30,7 @@ RESULTS_DIRECTORY = os.environ.get('REPOSITIONING_COMPARISON_DIRECTORY', DEFAULT
 @click.argument('graphtype', type=click.Choice(GRAPH_TYPES))
 @click.option('--data-directory', type=click.Path(dir_okay=True, file_okay=False), default=DIRECTORY, show_default=True)
 @click.option('-d', '--output-directory', type=click.Path(dir_okay=True, file_okay=False), default=RESULTS_DIRECTORY,
-              help='Output directory. Defaults to current working directory.')
+              help='Output directory. Defaults to current working directory.', show_default=True)
 @click.option('--method', default='node2vec', type=click.Choice(['node2vec', 'edge2vec', 'metapath2vec']))
 @click.option('--embedder', default='HadamardEmbedder', type=click.Choice(list(EMBEDDERS)))
 def main(graphtype, data_directory, output_directory, method, embedder):
@@ -76,7 +76,6 @@ def subgraph_node2vec(nodepath, edgepath, featurepath, embedder, output_director
     train_vecs = positive_vecs[0:5] + negative_vecs[0:15]
     train_labels = positive_label[0:5] + negative_label[0:15]
     train_data = [train_vecs, train_labels]
-    print(train_data)
     with open(os.path.join(output_directory, 'train.json'), 'w') as train_file:
         simplejson.dump(train_data, train_file)
     train_file.close()
