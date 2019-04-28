@@ -5,6 +5,7 @@ This package gets the master theis of Lingling Xu
 Installation
 ------------
 Install from `GitHub <https://github.com/lingling93/comparison>`_ with:
+
 .. code-block:: sh
 
     $ git clone https://github.com/lingling93/comparison.git repositioning-comparison
