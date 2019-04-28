@@ -53,30 +53,34 @@ def main(graph_type: str, data_directory: str, output_directory: str, method: st
     """This cli runs the ComparisonNRL."""
     node_path, edge_path, feature_path, validate_path, permutation_paths = ensure_data(directory=data_directory)
 
-    with open(os.path.join(output_directory, 'metadata.txt'), 'w') as file:
-        json.dump(
-            {
-                'graph': graph_type,
-                'method': method,
-                'embedder': embedder,
-            },
-            file,
-            indent=2,
-            sort_keys=True,
-        )
+    embedder_function: EmbedderFunction = EMBEDDERS[embedder]
 
-    embedder_fn: EmbedderFunction = EMBEDDERS[embedder]
+    # TODO add random seed as argument
 
     click.echo(f'Running method={method}, type={graph_type}, embedder={embedder}')
     if method == 'node2vec':
         if graph_type == 'subgraph':
             subgraph_node2vec_directory = os.path.join(output_directory, 'node2vec_subgraph')
-            run_node2vec_subgraph(node_path, edge_path, feature_path, embedder_fn, subgraph_node2vec_directory)
+            write_metadata(subgraph_node2vec_directory, graph_type, method, embedder)
+            run_node2vec_subgraph(
+                node_path=node_path,
+                edge_path=edge_path,
+                feature_path=feature_path,
+                embedder_function=embedder_function,
+                output_directory=subgraph_node2vec_directory,
+            )
 
         elif graph_type == 'wholegraph':
             wholegraph_node2vec_directory = os.path.join(output_directory, 'node2vec')
-            wholegraph = create_himmelstein_graph(node_path, edge_path)
-            run_node2vec(wholegraph, wholegraph_node2vec_directory, feature_path, validate_path, embedder_fn)
+            write_metadata(wholegraph_node2vec_directory, graph_type, method, embedder)
+            run_node2vec(
+                node_path=node_path,
+                edge_path=edge_path,
+                feature_path=feature_path,
+                validate_path=validate_path,
+                embedder_function=embedder_function,
+                output_directory=wholegraph_node2vec_directory,
+            )
 
         elif graph_type == "permutation1":
             graph = convert(permutation_paths[0], 1)
@@ -91,11 +95,14 @@ def main(graph_type: str, data_directory: str, output_directory: str, method: st
 
 
 def run_node2vec_subgraph(
+        *,
         node_path,
         edge_path,
         feature_path,
         embedder_function: EmbedderFunction,
         output_directory,
+        n_train_positive: int = 5,
+        n_train_negative: int = 15,
 ) -> None:
     if not os.path.exists(output_directory):
         os.mkdir(output_directory)
@@ -110,29 +117,48 @@ def run_node2vec_subgraph(
      negative_list,
      negative_labels) = generate_subgraph(feature_path, graph, cutoff=3, pnumber=10, nnumber=20)
 
-    click.echo('fitting node2vec')
+    click.echo('fitting node2vec/word2vec')
     model = fit_node2vec(subgraph)
 
-    click.echo('generating positive and negative vectors')
-    negative_vectors = embedder_function(model, negative_list)
+    click.echo('saving word2vec')
+    model.save(os.path.join(output_directory, 'word2vec_model.pickle'))
+
+    click.echo('generating vectors')
     positive_vectors = embedder_function(model, positive_list)
+    negative_vectors = embedder_function(model, negative_list)
 
-    train_vectors = positive_vectors[0:5] + negative_vectors[0:15]
-    train_labels = positive_labels[0:5] + negative_labels[0:15]
-    train_data = [train_vectors, train_labels]
+    train_vectors = positive_vectors[:n_train_positive] + negative_vectors[:n_train_negative]
+    train_labels = positive_labels[:n_train_positive] + negative_labels[:n_train_negative]
     with open(os.path.join(output_directory, 'train.json'), 'w') as file:
-        json.dump(train_data, file, indent=2, sort_keys=True)
+        json.dump(
+            [
+                dict(vector=train_vector, label=train_label)
+                for train_vector, train_label in zip(train_vectors, train_labels)
+            ],
+            file,
+            indent=2,
+            sort_keys=True,
+        )
 
-    test_vectors = positive_vectors[5:] + negative_vectors[15:]
-    test_labels = positive_labels[5:] + negative_labels[15:]
-    test_data = [test_vectors, test_labels]
+    test_vectors = positive_vectors[n_train_positive:] + negative_vectors[n_train_negative:]
+    test_labels = positive_labels[n_train_positive:] + negative_labels[n_train_negative:]
     with open(os.path.join(output_directory, 'test.json'), 'w') as file:
-        json.dump(test_data, file, indent=2, sort_keys=True)
+        json.dump(
+            [
+                dict(vector=train_vector, label=train_label)
+                for train_vector, train_label in zip(test_vectors, test_labels)
+            ],
+            file,
+            indent=2,
+            sort_keys=True,
+        )
 
+    click.echo('training logistic regression classifier')
     logistic_regression = train_logistic_regression(train_vectors, train_labels)
-    with open(os.path.join(output_directory, 'model.joblib'), 'wb') as file:
+    with open(os.path.join(output_directory, 'logistic_regression_clf.joblib'), 'wb') as file:
         joblib.dump(logistic_regression, file)
 
+    click.echo('validating logistic regression classifier')
     roc = validate(logistic_regression, test_vectors, test_labels)
     with open(os.path.join(output_directory, 'validation.json'), 'w') as file:
         json.dump(
@@ -146,14 +172,18 @@ def run_node2vec_subgraph(
 
 
 def run_node2vec(
-        graph,
-        output_directory,
+        *,
+        node_path,
+        edge_path,
         feature_path,
         validate_path,
+        output_directory,
         embedder_function: EmbedderFunction,
 ) -> None:
     if not os.path.exists(output_directory):
         os.mkdir(output_directory)
+
+    wholegraph = create_himmelstein_graph(node_path, edge_path)
 
     model = fit_node2vec(graph)
 
@@ -176,3 +206,17 @@ def run_node2vec(
     roc = validate(lg, test_vecs, test_labels)
     with open(os.path.join(output_directory, 'validate.txt'), 'w') as validate_file:
         print(f'ROC: {roc}', file=validate_file)
+
+
+def write_metadata(output_directory, graph_type, method, embedder):
+    with open(os.path.join(output_directory, 'metadata.txt'), 'w') as file:
+        json.dump(
+            {
+                'graph': graph_type,
+                'method': method,
+                'embedder': embedder,
+            },
+            file,
+            indent=2,
+            sort_keys=True,
+        )

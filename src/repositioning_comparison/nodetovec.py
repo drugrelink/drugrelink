@@ -24,25 +24,25 @@ def fit_node2vec(graph: networkx.Graph, workers: int = 4) -> gensim.models.Word2
     return word2vec_model
 
 
-EmbedderFunction = Callable[[gensim.models.Word2Vec, Iterable[Tuple[str, str]]], List]
+EmbedderFunction = Callable[[gensim.models.Word2Vec, Iterable[Tuple[str, str]]], List[List[float]]]
 
 
 def embed(
         word2vec_model: gensim.models.Word2Vec,
-        pair_list: Iterable[Tuple[str, str]],
+        edges: Iterable[Tuple[str, str]],
         edge_embedder_cls: Type[node2vec.edges.EdgeEmbedder],
-) -> List:
+) -> List[List[float]]:
     """
 
     :param word2vec_model:
-    :param pair_list:
+    :param edges: Pairs of source and target nodes
     :param edge_embedder_cls: Which :class:`node2vec.edges.EdgeEmbedder` from :mod:`node2vec.edges` to use.
     :return:
     """
     edge_embeddings = edge_embedder_cls(keyed_vectors=word2vec_model.wv)
     return [
-        edge_embeddings[node1, node2].tolist()
-        for node1, node2 in pair_list
+        edge_embeddings[source, target].tolist()
+        for source, target in edges
     ]
 
 
