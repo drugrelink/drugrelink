@@ -127,7 +127,13 @@ def run_node2vec_subgraph(
      positive_list,
      positive_labels,
      negative_list,
-     negative_labels) = generate_subgraph(feature_path, graph, cutoff=3, pnumber=10, nnumber=20)
+     negative_labels) = generate_subgraph(
+        feature_path,
+        graph,
+        cutoff=3,
+        positive_number=10,  # TODO calculate positive and negative number based on n_train_positive
+        negative_number=20,
+    )
 
     click.echo('fitting node2vec/word2vec')
     model = fit_node2vec(subgraph)
