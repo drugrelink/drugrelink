@@ -1,3 +1,0 @@
-graph: subgraph
-method: node2vec
-embdder: HadamardEmbedder
