@@ -57,27 +57,26 @@ def main(graph_type: str, data_directory: str, output_directory: str, method: st
 
     # TODO add random seed as argument
 
+    subdirectory = os.path.join(output_directory, f'{method}_{graph_type}_{embedder}')
     click.echo(f'Running method={method}, type={graph_type}, embedder={embedder}')
     if method == 'node2vec':
         if graph_type == 'subgraph':
-            subgraph_node2vec_directory = os.path.join(output_directory, 'node2vec_subgraph')
             run_node2vec_subgraph(
                 node_path=node_path,
                 edge_path=edge_path,
                 feature_path=feature_path,
                 embedder_function=embedder_function,
-                output_directory=subgraph_node2vec_directory,
+                output_directory=subdirectory,
             )
 
         elif graph_type == 'graph':
-            node2vec_directory = os.path.join(output_directory, 'node2vec')
             run_node2vec(
                 node_path=node_path,
                 edge_path=edge_path,
                 feature_path=feature_path,
                 validate_path=validate_path,
                 embedder_function=embedder_function,
-                output_directory=node2vec_directory,
+                output_directory=subdirectory,
             )
 
         elif graph_type == "permutation1":
@@ -130,9 +129,9 @@ def run_node2vec_subgraph(
      negative_labels) = generate_subgraph(
         feature_path,
         graph,
-        cutoff=3,
-        positive_number=10,  # TODO calculate positive and negative number based on n_train_positive
-        negative_number=20,
+        max_simple_path_length=3,
+        n_positive=10,  # TODO calculate positive and negative number based on n_train_positive
+        n_negative=20,
     )
 
     click.echo('fitting node2vec/word2vec')
