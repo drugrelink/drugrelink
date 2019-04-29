@@ -98,8 +98,8 @@ def run_node2vec_subgraph(
         feature_path,
         embedder_function: EmbedderFunction,
         output_directory,
-        n_train_positive: int = 3 * 5,
-        n_train_negative: int = 3 * 15,
+        n_train_positive: int = 5,
+        n_train_negative: int = 15,
 ) -> None:
     if not os.path.exists(output_directory):
         os.mkdir(output_directory)
