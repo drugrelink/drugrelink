@@ -58,6 +58,7 @@ def main(graph_type: str, data_directory: str, output_directory: str, method: st
     # TODO add random seed as argument
 
     subdirectory = os.path.join(output_directory, f'{method}_{graph_type}_{embedder}')
+    os.makedirs(subdirectory, exist_ok=True)
     click.echo(f'Running method={method}, type={graph_type}, embedder={embedder}')
     if method == 'node2vec':
         if graph_type == 'subgraph':
@@ -101,9 +102,6 @@ def run_node2vec_subgraph(
         n_train_positive: int = 5,
         n_train_negative: int = 15,
 ) -> None:
-    if not os.path.exists(output_directory):
-        os.mkdir(output_directory)
-
     with open(os.path.join(output_directory, 'metadata.json'), 'w') as file:
         json.dump(
             {
@@ -161,9 +159,6 @@ def run_node2vec(
         output_directory,
         embedder_function: EmbedderFunction,
 ) -> None:
-    if not os.path.exists(output_directory):
-        os.mkdir(output_directory)
-
     graph = create_himmelstein_graph(node_path, edge_path)
 
     model = fit_node2vec(graph)
