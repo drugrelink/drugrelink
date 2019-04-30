@@ -4,6 +4,7 @@ import json
 import os
 import sys
 from typing import Mapping
+import logging
 
 import click
 import joblib
@@ -17,6 +18,8 @@ from .permutation_convert import convert
 from .subgraph import generate_subgraph
 from .train import train_logistic_regression, validate
 from .typing import EmbedderFunction
+
+logger = logging.getLogger(__name__)
 
 DEFAULT_GRAPH_TYPE = 'subgraph'
 GRAPH_TYPES = [
@@ -51,6 +54,11 @@ RESULTS_DIRECTORY = os.environ.get('REPOSITIONING_COMPARISON_DIRECTORY', DEFAULT
 @click.option('--embedder', default='hadamard', type=click.Choice(list(EMBEDDERS)), show_default=True)
 def main(graph_type: str, data_directory: str, output_directory: str, method: str, embedder: str):
     """This cli runs the ComparisonNRL."""
+    logging.basicConfig(format="%(asctime)s - %(levelname)s - %(name)s - %(message)s")
+    logger.setLevel(logging.INFO)
+
+    logger.info("Hey")
+
     node_path, edge_path, feature_path, validate_path, permutation_paths = ensure_data(directory=data_directory)
 
     embedder_function = EMBEDDERS[embedder]
