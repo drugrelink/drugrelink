@@ -41,7 +41,12 @@ def generate_subgraph(
     positive_list = []
     positive_labels = [1] * n_positive
     df_positive = df_features.loc[df_features['status'] == 1][:n_positive]
-    for _, row in tqdm(df_positive.iterrows()):
+    it = tqdm(
+        df_positive.iterrows(),
+        total=len(df_positive.index),
+        desc=f'Get positive simple paths < {max_simple_path_length}',
+    )
+    for _, row in it:
         source = 'Compound::' + row['compound_id']
         target = 'Disease::' + row['disease_id']
         positive_list.append([source, target])
@@ -51,7 +56,12 @@ def generate_subgraph(
     negative_list = []
     negative_labels = [0] * n_negative
     df_negative = df_features.loc[df_features['status'] == 0][:n_negative]
-    for _, row in tqdm(df_negative.iterrows()):
+    it = tqdm(
+        df_negative.iterrows(),
+        total=len(df_negative.index),
+        desc=f'Get negative simple paths < {max_simple_path_length}',
+    )
+    for _, row in it:
         source = 'Compound::' + row['compound_id']
         target = 'Disease::' + row['disease_id']
         negative_list.append([source, target])
