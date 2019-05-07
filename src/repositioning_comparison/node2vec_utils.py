@@ -17,8 +17,8 @@ logger = logging.getLogger(__name__)
 class _StoreResultsNode2Vec(node2vec.Node2Vec):
     """A subclass of Node2Vec that gives a bit more logging."""
 
-    def __init__(self, *args, transition_probabilities_path: Optional[str] = None, **kwargs):
-        super().__init__(self, *args, **kwargs)
+    def __init__(self, graph, transition_probabilities_path: Optional[str] = None, **kwargs):
+        super().__init__(self, graph, **kwargs)
         self.transition_probabilities_path = transition_probabilities_path
 
     def _precompute_probabilities(self):

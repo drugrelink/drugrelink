@@ -3,9 +3,17 @@
 """Functions for generating sub-graphs appropriate for learning."""
 
 import bz2
+import logging
 
 import networkx as nx
 import pandas as pd
+from tqdm import tqdm
+
+__all__ = [
+    'generate_subgraph'
+]
+
+logger = logging.getLogger(__name__)
 
 
 def generate_subgraph(
@@ -24,6 +32,7 @@ def generate_subgraph(
     :param n_negative:
     :param max_simple_path_length: Maximum simple path length
     """
+    logger.info(f'opening {path}')
     with bz2.BZ2File(path, 'r') as file:
         df_features = pd.read_csv(file, sep='\t', low_memory=False)
 
@@ -32,7 +41,7 @@ def generate_subgraph(
     positive_list = []
     positive_labels = [1] * n_positive
     df_positive = df_features.loc[df_features['status'] == 1][:n_positive]
-    for _, row in df_positive.iterrows():
+    for _, row in tqdm(df_positive.iterrows()):
         source = 'Compound::' + row['compound_id']
         target = 'Disease::' + row['disease_id']
         positive_list.append([source, target])
@@ -42,7 +51,7 @@ def generate_subgraph(
     negative_list = []
     negative_labels = [0] * n_negative
     df_negative = df_features.loc[df_features['status'] == 0][:n_negative]
-    for _, row in df_negative.iterrows():
+    for _, row in tqdm(df_negative.iterrows()):
         source = 'Compound::' + row['compound_id']
         target = 'Disease::' + row['disease_id']
         negative_list.append([source, target])
