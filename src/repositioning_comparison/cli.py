@@ -48,8 +48,6 @@ def main(graph_type: str, data_directory: str, output_directory: str, method: st
     logging.basicConfig(format="%(asctime)s - %(levelname)s - %(name)s - %(message)s")
     logger.setLevel(logging.INFO)
 
-    logger.info("Hey")
-
     node_path, edge_path, feature_path, validate_path, permutation_paths = ensure_data(directory=data_directory)
 
     # TODO add random seed as argument
@@ -99,8 +97,11 @@ def run_node2vec_subgraph(
         n_train_positive: int = 5,
         n_train_negative: int = 15,
 ) -> None:
-    embedder_function = EMBEDDERS[embedder]
-    with open(os.path.join(output_directory, 'metadata.json'), 'w') as file:
+    # Define some output paths
+    metadata_json_path = os.path.join(output_directory, 'metadata.json')
+    transition_probability_path = os.path.join(output_directory, 'transition_probabilities.json')
+
+    with open(metadata_json_path, 'w') as file:
         json.dump(
             {
                 'graph': 'subgraph',
@@ -131,12 +132,13 @@ def run_node2vec_subgraph(
     )
 
     click.echo('fitting node2vec/word2vec')
-    model = fit_node2vec(subgraph)
+    model = fit_node2vec(subgraph, transition_probabilities_path=transition_probability_path)
 
     click.echo('saving word2vec')
     model.save(os.path.join(output_directory, 'word2vec_model.pickle'))
 
     click.echo('generating vectors')
+    embedder_function = EMBEDDERS[embedder]
     positive_vectors = embedder_function(model, positive_list)
     negative_vectors = embedder_function(model, negative_list)
 
@@ -157,11 +159,12 @@ def run_node2vec(
         output_directory,
         embedder: str,
 ) -> None:
-    embedder_function = EMBEDDERS[embedder]
+    transition_probability_path = os.path.join(output_directory, 'transition_probabilities.json')
+
     graph = create_himmelstein_graph(node_path, edge_path)
+    model = fit_node2vec(graph, transition_probabilities_path=transition_probability_path)
 
-    model = fit_node2vec(graph)
-
+    embedder_function = EMBEDDERS[embedder]
     train_list, train_labels = train_pairs(feature_path)
     #  TODO why build multiple embedders separately and not single one then split vectors after the fact?
     train_vectors = embedder_function(model, train_list)
