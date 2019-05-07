@@ -8,18 +8,18 @@ from typing import Optional
 
 import gensim
 import networkx
-import node2vec
+from node2vec import Node2Vec
 from node2vec.parallel import parallel_generate_walks
 
 logger = logging.getLogger(__name__)
 
 
-class _StoreResultsNode2Vec(node2vec.Node2Vec):
+class _SubNode2Vec(Node2Vec):
     """A subclass of Node2Vec that gives a bit more logging."""
 
-    def __init__(self, graph, transition_probabilities_path: Optional[str] = None, **kwargs):
-        super().__init__(self, graph, **kwargs)
+    def __init__(self, *args, transition_probabilities_path: Optional[str] = None, **kwargs) -> None:
         self.transition_probabilities_path = transition_probabilities_path
+        super().__init__(*args, **kwargs)
 
     def _precompute_probabilities(self):
         if self.transition_probabilities_path is not None and os.path.exists(self.transition_probabilities_path):
@@ -36,10 +36,6 @@ class _StoreResultsNode2Vec(node2vec.Node2Vec):
             logger.warning(f'Dumping pre-computed probabilities to {self.transition_probabilities_path}')
             with open(self.transition_probabilities_path, 'w') as file:
                 json.dump(self.d_graph, file, indent=2)
-
-
-class _SingleWorkerNode2Vec(node2vec.Node2Vec):
-    """A subclass of Node2Vec that gives a bit more logging."""
 
     def _generate_walks(self):
         """Generate the random walks which will be used as the skip-gram input.
@@ -64,10 +60,6 @@ class _SingleWorkerNode2Vec(node2vec.Node2Vec):
         return walks
 
 
-class _SingleWorkerStoreNode2Vec(_StoreResultsNode2Vec, _SingleWorkerNode2Vec):
-    pass
-
-
 def fit_node2vec(
         graph: networkx.Graph,
         transition_probabilities_path: Optional[str] = None,
@@ -88,8 +80,8 @@ def fit_node2vec(
 
     logger.info(f"Initializing Node2Vec with {workers}")
 
-    node2vec_model = _SingleWorkerStoreNode2Vec(
-        graph,
+    node2vec_model = _SubNode2Vec(
+        graph=graph,
         dimensions=64,
         walk_length=30,
         num_walks=200,
