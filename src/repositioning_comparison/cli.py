@@ -1,23 +1,21 @@
 # -*- coding: utf-8 -*-
 
 import json
+import logging
 import os
 import sys
-from typing import Mapping
-import logging
 
 import click
 import joblib
 
-from . import embedders
 from .create_graph import create_himmelstein_graph
 from .download import DIRECTORY, ensure_data
+from .embedders import EMBEDDERS
 from .node2vec_utils import fit_node2vec
 from .pairs import test_pairs, train_pairs
 from .permutation_convert import convert
 from .subgraph import generate_subgraph
 from .train import train_logistic_regression, validate
-from .typing import EmbedderFunction
 
 logger = logging.getLogger(__name__)
 
@@ -31,13 +29,6 @@ GRAPH_TYPES = [
     'permutation4',
     'permutation5',
 ]
-
-EMBEDDERS: Mapping[str, EmbedderFunction] = {
-    'hadamard': embedders.hadamard,
-    'average': embedders.average,
-    'weighted_l1': embedders.weighted_l1,
-    'weighted_l2': embedders.weighted_l2,
-}
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 DEFAULT_DIRECTORY = os.path.abspath(os.path.join(HERE, os.pardir, os.pardir, 'results'))
@@ -61,8 +52,6 @@ def main(graph_type: str, data_directory: str, output_directory: str, method: st
 
     node_path, edge_path, feature_path, validate_path, permutation_paths = ensure_data(directory=data_directory)
 
-    embedder_function = EMBEDDERS[embedder]
-
     # TODO add random seed as argument
 
     subdirectory = os.path.join(output_directory, f'{method}_{graph_type}_{embedder}')
@@ -74,7 +63,7 @@ def main(graph_type: str, data_directory: str, output_directory: str, method: st
                 node_path=node_path,
                 edge_path=edge_path,
                 feature_path=feature_path,
-                embedder_function=embedder_function,
+                embedder=embedder,
                 output_directory=subdirectory,
             )
 
@@ -84,7 +73,7 @@ def main(graph_type: str, data_directory: str, output_directory: str, method: st
                 edge_path=edge_path,
                 feature_path=feature_path,
                 validate_path=validate_path,
-                embedder_function=embedder_function,
+                embedder=embedder,
                 output_directory=subdirectory,
             )
 
@@ -105,17 +94,18 @@ def run_node2vec_subgraph(
         node_path,
         edge_path,
         feature_path,
-        embedder_function: EmbedderFunction,
+        embedder: str,
         output_directory,
         n_train_positive: int = 5,
         n_train_negative: int = 15,
 ) -> None:
+    embedder_function = EMBEDDERS[embedder]
     with open(os.path.join(output_directory, 'metadata.json'), 'w') as file:
         json.dump(
             {
                 'graph': 'subgraph',
                 'method': 'node2vec',
-                'embedder': embedder_function.func.__name__,
+                'embedder': embedder,
                 'n_train_positive': n_train_positive,
                 'n_train_negative': n_train_negative,
             },
@@ -165,8 +155,9 @@ def run_node2vec(
         feature_path,
         validate_path,
         output_directory,
-        embedder_function: EmbedderFunction,
+        embedder: str,
 ) -> None:
+    embedder_function = EMBEDDERS[embedder]
     graph = create_himmelstein_graph(node_path, edge_path)
 
     model = fit_node2vec(graph)

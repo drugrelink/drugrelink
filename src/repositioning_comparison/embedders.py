@@ -1,16 +1,19 @@
 # -*- coding: utf-8 -*-
 
 from functools import partial
-from typing import Iterable, List, Tuple, Type
+from typing import Iterable, List, Mapping, Tuple, Type
 
 import gensim
 import node2vec.edges
+
+from .typing import EmbedderFunction
 
 __all__ = [
     'hadamard',
     'average',
     'weighted_l1',
     'weighted_l2',
+    'EMBEDDERS',
 ]
 
 
@@ -37,3 +40,10 @@ hadamard = partial(embed, edge_embedder_cls=node2vec.edges.HadamardEmbedder)
 average = partial(embed, edge_embedder_cls=node2vec.edges.AverageEmbedder)
 weighted_l1 = partial(embed, edge_embedder_cls=node2vec.edges.WeightedL1Embedder)
 weighted_l2 = partial(embed, edge_embedder_cls=node2vec.edges.WeightedL2Embedder)
+
+EMBEDDERS: Mapping[str, EmbedderFunction] = {
+    'hadamard': hadamard,
+    'average': average,
+    'weighted_l1': weighted_l1,
+    'weighted_l2': weighted_l2,
+}
