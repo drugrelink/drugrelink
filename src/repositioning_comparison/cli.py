@@ -3,6 +3,7 @@
 import json
 import logging
 import os
+import pickle
 import sys
 
 import click
@@ -99,7 +100,7 @@ def run_node2vec_subgraph(
 ) -> None:
     # Define some output paths
     metadata_json_path = os.path.join(output_directory, 'metadata.json')
-    transition_probability_path = os.path.join(output_directory, 'transition_probabilities.json')
+    transition_probabilities_path = os.path.join(output_directory, 'transition_probabilities.json')
 
     with open(metadata_json_path, 'w') as file:
         json.dump(
@@ -115,24 +116,57 @@ def run_node2vec_subgraph(
             sort_keys=True,
         )
 
-    click.echo('creating graph')
-    graph = create_himmelstein_graph(node_path, edge_path)
+    subgraph_path = os.path.join(output_directory, 'subgraph.pickle')
+    positive_list_path = os.path.join(output_directory, 'positive_list.pickle')
+    positive_labels_path = os.path.join(output_directory, 'positive_labels.pickle')
+    negative_list_path = os.path.join(output_directory, 'negative_list.pickle')
+    negative_labels_path = os.path.join(output_directory, 'negative_labels.pickle')
 
-    click.echo('creating sub-graph')
-    (subgraph,
-     positive_list,
-     positive_labels,
-     negative_list,
-     negative_labels) = generate_subgraph(
-        feature_path,
-        graph,
-        max_simple_path_length=3,
-        n_positive=10,  # TODO calculate positive and negative number based on n_train_positive
-        n_negative=20,
-    )
+    if os.path.exists(subgraph_path):
+        logger.info('loading pickled subgraph info')
+        with open(subgraph_path, 'rb') as file:
+            subgraph = pickle.load(file)
+        with open(positive_list_path, 'rb') as file:
+            positive_list = pickle.load(file)
+        with open(positive_labels_path, 'rb') as file:
+            positive_labels = pickle.load(file)
+        with open(negative_list_path, 'rb') as file:
+            negative_list = pickle.load(file)
+        with open(negative_labels_path, 'rb') as file:
+            negative_labels = pickle.load(file)
+        logger.info('loaded pickled subgraph info')
+
+    else:
+        click.echo('creating graph')
+        graph = create_himmelstein_graph(node_path, edge_path)
+
+        click.echo('creating sub-graph')
+        (subgraph,
+         positive_list,
+         positive_labels,
+         negative_list,
+         negative_labels) = generate_subgraph(
+            feature_path,
+            graph,
+            max_simple_path_length=3,
+            n_positive=10,  # TODO calculate positive and negative number based on n_train_positive
+            n_negative=20,
+        )
+
+        logger.info('dumping pickled subgraph info')
+        with open(subgraph_path, 'wb') as file:
+            pickle.dump(subgraph, file, protocol=-1)
+        with open(positive_list_path, 'wb') as file:
+            pickle.dump(positive_list, file, protocol=-1)
+        with open(positive_labels_path, 'wb') as file:
+            pickle.dump(positive_labels, file, protocol=-1)
+        with open(negative_list_path, 'wb') as file:
+            pickle.dump(negative_list, file, protocol=-1)
+        with open(negative_labels_path, 'wb') as file:
+            pickle.dump(negative_labels, file, protocol=-1)
 
     click.echo('fitting node2vec/word2vec')
-    model = fit_node2vec(subgraph, transition_probabilities_path=transition_probability_path)
+    model = fit_node2vec(subgraph, transition_probabilities_path=transition_probabilities_path)
 
     click.echo('saving word2vec')
     model.save(os.path.join(output_directory, 'word2vec_model.pickle'))
