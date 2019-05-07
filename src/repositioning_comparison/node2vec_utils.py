@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 
-import json
+"""A wrapper around Node2vec."""
+
 import logging
 import multiprocessing
 import os
+import pickle
 from typing import Optional
 
 import gensim
@@ -23,8 +25,8 @@ class _SubNode2Vec(Node2Vec):
 
     def _precompute_probabilities(self):
         if self.transition_probabilities_path is not None and os.path.exists(self.transition_probabilities_path):
-            with open(self.transition_probabilities_path) as file:
-                self.d_graph = json.load(file)
+            with open(self.transition_probabilities_path, 'rb') as file:
+                self.d_graph = pickle.load(file)
                 logger.warning(f'Loaded pre-computed probabilities from {self.transition_probabilities_path}')
                 return
 
@@ -34,8 +36,8 @@ class _SubNode2Vec(Node2Vec):
 
         if self.transition_probabilities_path is not None:
             logger.warning(f'Dumping pre-computed probabilities to {self.transition_probabilities_path}')
-            with open(self.transition_probabilities_path, 'w') as file:
-                json.dump(self.d_graph, file, indent=2)
+            with open(self.transition_probabilities_path, 'wb') as file:
+                pickle.dump(self.d_graph, file)
 
     def _generate_walks(self):
         """Generate the random walks which will be used as the skip-gram input.
