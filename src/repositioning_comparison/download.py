@@ -26,7 +26,7 @@ PERMUTATION5_DATA_URL = 'https://github.com/dhimmel/integrate/blob/master/data/p
 
 PERMUTATION_DATA_FILE_FMT = 'hetnet_perm-{}.json.bz2'
 PERMUTATION_DATA_URL_FMT = 'https://github.com/dhimmel/integrate/blob/master/data/permuted/hetnet_perm-{}.json.bz2'
-
+SYMPTOMATIC_DATA_URL = 'https://github.com/dhimmel/learn/blob/master/prediction/predictions/probabilities.tsv'
 
 def ensure_data(directory: Optional[str] = None) -> Tuple[str, str, str, str, List[str]]:
     """Ensure Himmelstein's data files are downloaded."""
@@ -55,6 +55,11 @@ def ensure_data(directory: Optional[str] = None) -> Tuple[str, str, str, str, Li
         logger.warning(f'downloading {VALIDATE_DATA_URL}')
         urlretrieve(VALIDATE_DATA_URL, validate_data_path)
 
+    symptomatic_data_path = os.path.join(directory, 'probabilities.tsv')
+    if not os.path.exists(symptomatic_data_path):
+        logger.warning(f'downloading {SYMPTOMATIC_DATA_URL}')
+        urlretrieve(SYMPTOMATIC_DATA_URL, symptomatic_data_path)
+
     permutation_directory = os.path.join(directory, "permutations")
     os.makedirs(permutation_directory, exist_ok=True)
 
@@ -67,4 +72,4 @@ def ensure_data(directory: Optional[str] = None) -> Tuple[str, str, str, str, Li
             urlretrieve(url, permutation_data_path)
         permutation_paths.append(permutation_data_path)
 
-    return node_data_path, edge_data_path, transformed_features_path, validate_data_path, permutation_paths
+    return node_data_path, edge_data_path, transformed_features_path, validate_data_path, symptomatic_data_path, permutation_paths

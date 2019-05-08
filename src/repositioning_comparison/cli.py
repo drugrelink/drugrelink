@@ -49,7 +49,7 @@ def main(graph_type: str, data_directory: str, output_directory: str, method: st
     logging.basicConfig(format="%(asctime)s - %(levelname)s - %(name)s - %(message)s")
     logger.setLevel(logging.INFO)
 
-    node_path, edge_path, feature_path, validate_path, permutation_paths = ensure_data(directory=data_directory)
+    node_path, edge_path, feature_path, validate_path,symptomatic_path,permutation_paths = ensure_data(directory=data_directory)
 
     # TODO add random seed as argument
 
@@ -190,6 +190,7 @@ def run_node2vec(
         edge_path,
         feature_path,
         validate_path,
+        symptomatic_path,
         output_directory,
         embedder: str,
 ) -> None:
@@ -202,18 +203,33 @@ def run_node2vec(
     train_list, train_labels = train_pairs(feature_path)
     #  TODO why build multiple embedders separately and not single one then split vectors after the fact?
     train_vectors = embedder_function(model, train_list)
-    test_list, test_labels = test_pairs(validate_path)
-    test_vectors = embedder_function(model, test_list)
+    disease_modifying, clinical_trials, drug_central,symptomatic = test_pairs(validate_path,symptomatic_path)
+    test_dm_vectors = embedder_function(model,disease_modifying[0])
+    test_dm_labels = disease_modifying[1]
+    test_ct_vectors = embedder_function(model,clinical_trials[0])
+    test_ct_labels = clinical_trials[1]
+    test_dc_vectors = embedder_function(model,drug_central[0])
+    test_dc_labels = drug_central[1]
+    test_sy_vectors = embedder_function(model,symptomatic[0])
+    test_sy_labels = symptomatic[1]
 
-    _train_evaluate_generate_artifacts(output_directory, train_vectors, train_labels, test_vectors, test_labels)
+
+    _train_evaluate_generate_artifacts(output_directory, train_vectors, train_labels, test_dm_vectors,test_dm_labels ,test_ct_vectors,test_ct_labels,test_dc_vectors ,test_dc_labels,test_sy_vectors,test_sy_labels)
 
 
 def _train_evaluate_generate_artifacts(
         output_directory,
         train_vectors,
         train_labels,
-        test_vectors,
-        test_labels,
+        test_dm_vectors,
+        test_dm_labels ,
+        test_ct_vectors,
+        test_ct_labels,
+        test_dc_vectors,
+        test_dc_labels,
+        test_sy_vectors,
+        test_sy_labels
+
 ) -> None:
     with open(os.path.join(output_directory, 'train.json'), 'w') as file:
         json.dump(
@@ -229,8 +245,9 @@ def _train_evaluate_generate_artifacts(
     with open(os.path.join(output_directory, 'test.json'), 'w') as file:
         json.dump(
             [
-                dict(vector=train_vector, label=train_label)
-                for train_vector, train_label in zip(test_vectors, test_labels)
+                dictdisease_modifying_vector=test_dm_vectors, disease_modifying_label=test_dm_labels
+                     clinical_trial_vector = test_dc_vectors, )
+
             ],
             file,
             indent=2,
