@@ -14,19 +14,25 @@ HERE = os.path.abspath(os.path.dirname(__file__))
 DEFAULT_DIRECTORY = os.path.abspath(os.path.join(HERE, os.pardir, os.pardir, 'data'))
 DIRECTORY = os.environ.get('REPOSITIONING_COMPARISON_DIRECTORY', DEFAULT_DIRECTORY)
 
+# URLs from dhimmel/integrate
+
 NODE_DATA_URL = 'https://raw.githubusercontent.com/dhimmel/integrate/master/data/nodes.tsv'
 EDGE_DATA_URL = 'https://raw.githubusercontent.com/dhimmel/integrate/master/data/edges.sif.gz'
-TRANSFORMED_FEATURES_URL = 'https://github.com/dhimmel/learn/blob/master/prediction/features/transformed-features.tsv.bz2?raw=true'
-VALIDATE_DATA_URL = 'https://github.com/dhimmel/learn/blob/master/validate/validation-statuses.tsv'
-PERMUTATION1_DATA_URL = 'https://github.com/dhimmel/integrate/blob/master/data/permuted/hetnet_perm-1.json.bz2'
-PERMUTATION2_DATA_URL = 'https://github.com/dhimmel/integrate/blob/master/data/permuted/hetnet_perm-2.json.bz2'
-PERMUTATION3_DATA_URL = 'https://github.com/dhimmel/integrate/blob/master/data/permuted/hetnet_perm-3.json.bz2'
-PERMUTATION4_DATA_URL = 'https://github.com/dhimmel/integrate/blob/master/data/permuted/hetnet_perm-4.json.bz2'
-PERMUTATION5_DATA_URL = 'https://github.com/dhimmel/integrate/blob/master/data/permuted/hetnet_perm-5.json.bz2'
+
+PERMUTATION1_DATA_URL = 'https://raw.githubusercontent.com/dhimmel/integrate/master/data/permuted/hetnet_perm-1.json.bz2'
+PERMUTATION2_DATA_URL = 'https://raw.githubusercontent.com/dhimmel/integrate/master/data/permuted/hetnet_perm-2.json.bz2'
+PERMUTATION3_DATA_URL = 'https://raw.githubusercontent.com/dhimmel/integrate/master/data/permuted/hetnet_perm-3.json.bz2'
+PERMUTATION4_DATA_URL = 'https://raw.githubusercontent.com/dhimmel/integrate/master/data/permuted/hetnet_perm-4.json.bz2'
+PERMUTATION5_DATA_URL = 'https://raw.githubusercontent.com/dhimmel/integrate/master/data/permuted/hetnet_perm-5.json.bz2'
 
 PERMUTATION_DATA_FILE_FMT = 'hetnet_perm-{}.json.bz2'
-PERMUTATION_DATA_URL_FMT = 'https://github.com/dhimmel/integrate/blob/master/data/permuted/hetnet_perm-{}.json.bz2'
-SYMPTOMATIC_DATA_URL = 'https://github.com/dhimmel/learn/blob/master/prediction/predictions/probabilities.tsv'
+PERMUTATION_DATA_URL_FMT = 'https://raw.githubusercontent.com/dhimmel/integrate/master/data/permuted/hetnet_perm-{}.json.bz2'
+
+# URLs from dhimmel/learn
+
+TRANSFORMED_FEATURES_URL = 'https://raw.githubusercontent.com/dhimmel/learn/master/prediction/features/transformed-features.tsv.bz2?raw=true'
+VALIDATE_DATA_URL = 'https://raw.githubusercontent.com/dhimmel/learn/master/validate/validation-statuses.tsv'
+SYMPTOMATIC_DATA_URL = 'https://raw.githubusercontent.com/dhimmel/learn/master/prediction/predictions/probabilities.tsv'
 
 def ensure_data(directory: Optional[str] = None) -> Tuple[str, str, str, str, List[str]]:
     """Ensure Himmelstein's data files are downloaded."""
