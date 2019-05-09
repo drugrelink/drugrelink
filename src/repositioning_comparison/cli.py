@@ -231,6 +231,14 @@ def _train_evaluate_generate_artifacts(
         test_sy_labels
 
 ) -> None:
+    test_dict ={'Disease Modifying vectors' : test_dm_vectors,
+                'Disease Modifying labels' : test_dm_labels,
+                'Clinical Trial vectors' : test_ct_vectors,
+                'Clinical Trial labels' : test_ct_labels ,
+                'Drug Central vectors' : test_dc_vectors,
+                'Drug Central labels' : test_dc_labels,
+                'Symtomatic vectors' : test_sy_vectors,
+                'Symptomatic labels' : test_sy_labels}
     with open(os.path.join(output_directory, 'train.json'), 'w') as file:
         json.dump(
             [
@@ -243,12 +251,7 @@ def _train_evaluate_generate_artifacts(
         )
 
     with open(os.path.join(output_directory, 'test.json'), 'w') as file:
-        json.dump(
-            [
-                dictdisease_modifying_vector=test_dm_vectors, disease_modifying_label=test_dm_labels
-                     clinical_trial_vector = test_dc_vectors, )
-
-            ],
+        json.dump(test_dict,
             file,
             indent=2,
             sort_keys=True,
