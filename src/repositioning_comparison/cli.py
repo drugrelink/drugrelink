@@ -222,23 +222,27 @@ def _train_evaluate_generate_artifacts(
         train_vectors,
         train_labels,
         test_dm_vectors,
-        test_dm_labels ,
-        test_ct_vectors,
-        test_ct_labels,
-        test_dc_vectors,
-        test_dc_labels,
-        test_sy_vectors,
-        test_sy_labels
+        test_dm_labels,
+        test_ct_vectors = None,
+        test_ct_labels = None,
+        test_dc_vectors = None,
+        test_dc_labels = None,
+        test_sy_vectors = None,
+        test_sy_labels = None
 
 ) -> None:
-    test_dict ={'Disease Modifying vectors' : test_dm_vectors,
-                'Disease Modifying labels' : test_dm_labels,
-                'Clinical Trial vectors' : test_ct_vectors,
-                'Clinical Trial labels' : test_ct_labels ,
-                'Drug Central vectors' : test_dc_vectors,
-                'Drug Central labels' : test_dc_labels,
-                'Symtomatic vectors' : test_sy_vectors,
-                'Symptomatic labels' : test_sy_labels}
+    if not test_ct_vectors:
+        test_dict ={'Test vectors': test_dm_vectors ,
+                    'Test labels': test_dm_labels}
+    else:
+        test_dict ={'Disease Modifying vectors': test_dm_vectors,
+                    'Disease Modifying labels': test_dm_labels,
+                    'Clinical Trial vectors': test_ct_vectors,
+                    'Clinical Trial labels': test_ct_labels ,
+                    'Drug Central vectors': test_dc_vectors,
+                    'Drug Central labels': test_dc_labels,
+                    'Symptomatic vectors': test_sy_vectors,
+                    'Symptomatic labels': test_sy_labels}
     with open(os.path.join(output_directory, 'train.json'), 'w') as file:
         json.dump(
             [
