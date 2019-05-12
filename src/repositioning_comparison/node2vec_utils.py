@@ -44,7 +44,7 @@ class _SubNode2Vec(Node2Vec):
 
         :return: List of walks. Each walk is a list of nodes.
         """
-        walk_results = parallel_generate_walks(
+        return parallel_generate_walks(
             self.d_graph,
             self.walk_length,
             self.num_walks,
@@ -57,9 +57,7 @@ class _SubNode2Vec(Node2Vec):
             self.FIRST_TRAVEL_KEY,
             self.quiet
         )
-        flatten = lambda l: [item for sublist in l for item in sublist]
-        walks = flatten(walk_results)
-        return walks
+
 
 
 def fit_node2vec(
