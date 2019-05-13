@@ -271,22 +271,27 @@ def _train_evaluate_generate_artifacts(
     click.echo('validating logistic regression classifier')
     if not test_ct_vectors:
 
-        roc = validate(logistic_regression, test_dm_vectors, test_dm_labels)
-        roc_dict = {'ROC:':roc}
+        roc, y_pro= validate(logistic_regression, test_dm_vectors, test_dm_labels)
+        roc_dict = {'ROC:':roc,
+                    'y_probability': y_pro}
     else:
-        dm_roc = validate(logistic_regression, test_dm_vectors, test_dm_labels)
-        ct_roc = validate(logistic_regression, test_ct_vectors, test_ct_labels)
-        dc_roc = validate(logistic_regression, test_dc_vectors, test_dc_labels)
-        sy_roc = validate(logistic_regression, test_sy_vectors, test_sy_labels)
+        dm_roc, dm_yp = validate(logistic_regression, test_dm_vectors, test_dm_labels)
+        ct_roc, ct_yp = validate(logistic_regression, test_ct_vectors, test_ct_labels)
+        dc_roc, dc_yp = validate(logistic_regression, test_dc_vectors, test_dc_labels)
+        sy_roc, sy_yp = validate(logistic_regression, test_sy_vectors, test_sy_labels)
+
         roc_dict = {'Disease Modifying ROC': dm_roc,
+                    'Disease Modifying Prediction Probanility': dm_yp,
                     'Clinical Trial ROC': ct_roc,
+                    'Clinical Trial Prediction Probability': ct_yp,
                     'Drug Central ROC': dc_roc,
-                    'Symptomatic ROC': sy_roc}
+                    'Drug Central Prediction Probability': dc_yp,
+                    'Symptomatic ROC': sy_roc,
+                    'Syptomatic Prediction Probability': sy_yp,
+                    }
     with open(os.path.join(output_directory, 'validation.json'), 'w') as file:
         json.dump(
-            {
-                'ROC': roc,
-            },
+            roc_dict,
             file,
             sort_keys=True,
             indent=2,
