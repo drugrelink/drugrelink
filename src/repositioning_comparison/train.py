@@ -12,4 +12,5 @@ def train_logistic_regression(x, y) -> LogisticRegression:
 
 def validate(logistic_regression: LogisticRegression, x, y) -> float:
     roc = roc_auc_score(y, logistic_regression.predict_proba(x)[:, 1])
+    y_pro = 
     return roc

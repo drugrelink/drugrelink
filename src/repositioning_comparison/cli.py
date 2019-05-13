@@ -234,6 +234,8 @@ def _train_evaluate_generate_artifacts(
     if not test_ct_vectors:
         test_dict ={'Test vectors': test_dm_vectors ,
                     'Test labels': test_dm_labels}
+
+
     else:
         test_dict ={'Disease Modifying vectors': test_dm_vectors,
                     'Disease Modifying labels': test_dm_labels,
@@ -267,7 +269,19 @@ def _train_evaluate_generate_artifacts(
         joblib.dump(logistic_regression, file)
 
     click.echo('validating logistic regression classifier')
-    roc = validate(logistic_regression, test_vectors, test_labels)
+    if not test_ct_vectors:
+
+        roc = validate(logistic_regression, test_dm_vectors, test_dm_labels)
+        roc_dict = {'ROC:':roc}
+    else:
+        dm_roc = validate(logistic_regression, test_dm_vectors, test_dm_labels)
+        ct_roc = validate(logistic_regression, test_ct_vectors, test_ct_labels)
+        dc_roc = validate(logistic_regression, test_dc_vectors, test_dc_labels)
+        sy_roc = validate(logistic_regression, test_sy_vectors, test_sy_labels)
+        roc_dict = {'Disease Modifying ROC': dm_roc,
+                    'Clinical Trial ROC': ct_roc,
+                    'Drug Central ROC': dc_roc,
+                    'Symptomatic ROC': sy_roc}
     with open(os.path.join(output_directory, 'validation.json'), 'w') as file:
         json.dump(
             {
