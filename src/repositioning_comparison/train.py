@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import pandas as pd
+import numpy as np
 from glmnet import logistic
 from sklearn.metrics import roc_auc_score
 
@@ -11,7 +12,13 @@ def train_logistic_regression(x, y) -> logistic.LogitNet:
 
 
 def validate(logistic_regression: logistic.LogitNet, x, y) -> float:
-    print(logistic_regression.predict_proba(x))
-    roc = roc_auc_score(y, logistic_regression.predict_proba(x))
-    y_pro = logistic_regression.predict_proba(x)
-    return roc, y_pro
+    x = np.array(x)
+    scores = logistic_regression.predict_proba(x)
+    y_score =[]
+    for i in scores:
+        y_score.append(i[1])
+    roc = roc_auc_score(y, y_score)
+
+
+
+    return roc, scores
