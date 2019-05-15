@@ -43,7 +43,8 @@ def test_pairs(validation_path, train_path, symptomatic_path):
         if row['category'] == 'SYM':
             symptomatic [0].append(['Compound::' + row['compound_id'], 'Disease::' + row['disease_id']])
             symptomatic[1].append(1)
-        else:
+        elif row['category'] != 'DM':
+
             symptomatic [0].append(['Compound::' + row['compound_id'], 'Disease::' + row['disease_id']])
             symptomatic[1].append(0)
 
