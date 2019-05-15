@@ -1,0 +1,7 @@
+{
+  "graph_type": "subgraph",
+  "method": "node2vec",
+  "dimensions": 32,
+  "num_walks": 10,
+  "walk_length": 30
+}

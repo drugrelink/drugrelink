@@ -4,7 +4,8 @@
 
 import logging
 import os
-from typing import List, Optional, Tuple
+from dataclasses import dataclass
+from typing import List, Optional
 from urllib.request import urlretrieve
 
 logger = logging.getLogger(__name__)
@@ -34,7 +35,20 @@ TRANSFORMED_FEATURES_URL = 'https://raw.githubusercontent.com/dhimmel/learn/mast
 VALIDATE_DATA_URL = 'https://raw.githubusercontent.com/dhimmel/learn/master/validate/validation-statuses.tsv'
 SYMPTOMATIC_DATA_URL = 'https://raw.githubusercontent.com/dhimmel/learn/master/prediction/predictions/probabilities.tsv'
 
-def ensure_data(directory: Optional[str] = None) -> Tuple[str, str, str, str, List[str]]:
+
+@dataclass
+class DataPaths:
+    """Container for the paths for training."""
+
+    node_data_path: str
+    edge_data_path: str
+    transformed_features_path: str
+    validate_data_path: str
+    symptomatic_data_path: str
+    permutation_paths: List[str]
+
+
+def get_data_paths(directory: Optional[str] = None) -> DataPaths:
     """Ensure Himmelstein's data files are downloaded."""
     if directory is None:
         directory = DIRECTORY
@@ -78,4 +92,11 @@ def ensure_data(directory: Optional[str] = None) -> Tuple[str, str, str, str, Li
             urlretrieve(url, permutation_data_path)
         permutation_paths.append(permutation_data_path)
 
-    return node_data_path, edge_data_path, transformed_features_path, validate_data_path, symptomatic_data_path, permutation_paths
+    return DataPaths(
+        node_data_path=node_data_path,
+        edge_data_path=edge_data_path,
+        transformed_features_path=transformed_features_path,
+        validate_data_path=validate_data_path,
+        symptomatic_data_path=symptomatic_data_path,
+        permutation_paths=permutation_paths,
+    )
