@@ -59,11 +59,14 @@ class _SubNode2Vec(Node2Vec):
         )
 
 
-
 def fit_node2vec(
         graph: networkx.Graph,
         transition_probabilities_path: Optional[str] = None,
         workers: int = 1,
+        walk_length=30,
+        dimensions=64,
+        num_walks=10,
+
 ) -> gensim.models.Word2Vec:
     """
 
@@ -82,9 +85,9 @@ def fit_node2vec(
 
     node2vec_model = _SubNode2Vec(
         graph=graph,
-        dimensions=64,
-        walk_length=30,
-        num_walks=200,
+        dimensions=dimensions,
+        walk_length=walk_length,
+        num_walks=num_walks,
         workers=workers,
         transition_probabilities_path=transition_probabilities_path,
     )
