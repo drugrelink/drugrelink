@@ -49,7 +49,7 @@ def test_pairs(
         symptomatic[0].append(['Compound::' + row['compound_id'], 'Disease::' + row['disease_id']])
         if row['category'] == 'SYM':
             symptomatic[1].append(1)
-        else:
+        elif row['category'] != 'DM':
             symptomatic[1].append(0)
 
     return disease_modifying, clinical_trials, drug_central, symptomatic
