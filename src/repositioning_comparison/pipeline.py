@@ -87,7 +87,7 @@ def run_node2vec_graph(
 
 def run_node2vec_subgraph(
         *,
-        dimension: int,
+        dimensions: int,
         walk_length: int,
         num_walks: int,
         n_train_positive: int = 5,
