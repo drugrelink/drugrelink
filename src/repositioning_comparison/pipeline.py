@@ -38,7 +38,7 @@ def run_node2vec_graph(
         output_directory = os.path.join(RESULTS_DIRECTORY, datetime.now().strftime(f'node2vec_{embedder}_%Y%m%d_%H%M'))
         os.makedirs(output_directory, exist_ok=True)
 
-    with open(output_directory,'metadata.json','w') as file:
+    with open(os.path.join(output_directory, 'metadata.json'),'w') as file:
         json.dump({
             'dimensions': dimensions,
             'walk_length': walk_length,
@@ -47,7 +47,10 @@ def run_node2vec_graph(
             'input_directory': input_directory,
             'output_directory': output_directory
 
-        })
+        },
+        file,
+        indent=2,
+        sort_keys =True)
     data_paths = get_data_paths(directory=input_directory)
     transition_probability_path = os.path.join(output_directory, 'transition_probabilities.json')
 
