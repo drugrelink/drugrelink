@@ -62,7 +62,8 @@ def run_node2vec_graph(
         walk_length=walk_length,
         num_walks=num_walks,
     )
-
+    click.echo('saving word2vec')
+    model.save(os.path.join(output_directory, 'word2vec_model.pickle'))
     embedder_function = EMBEDDERS[embedder]
     train_list, train_labels = train_pairs(data_paths.transformed_features_path)
     #  TODO why build multiple embedders separately and not single one then split vectors after the fact?

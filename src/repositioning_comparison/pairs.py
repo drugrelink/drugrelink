@@ -46,10 +46,12 @@ def test_pairs(
             drug_central[1].append(0)
 
     for _, row in df_symptomatic[['compound_id', 'disease_id', 'category']].iterrows():
-        symptomatic[0].append(['Compound::' + row['compound_id'], 'Disease::' + row['disease_id']])
+
         if row['category'] == 'SYM':
+            symptomatic[0].append(['Compound::' + row['compound_id'], 'Disease::' + row['disease_id']])
             symptomatic[1].append(1)
         elif row['category'] != 'DM':
+            symptomatic[0].append(['Compound::' + row['compound_id'], 'Disease::' + row['disease_id']])
             symptomatic[1].append(0)
 
     return disease_modifying, clinical_trials, drug_central, symptomatic
