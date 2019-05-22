@@ -52,12 +52,12 @@ def run_node2vec_graph(
         indent=2,
         sort_keys =True)
     data_paths = get_data_paths(directory=input_directory)
-    transition_probability_path = os.path.join(output_directory, 'transition_probabilities.json')
+    #transition_probability_path = os.path.join(output_directory, 'transition_probabilities.json')
 
     graph = create_himmelstein_graph(data_paths.node_data_path, data_paths.edge_data_path)
     model = fit_node2vec(
         graph,
-        transition_probabilities_path=transition_probability_path,
+        transition_probabilities_path='/home/bio/groupshare/lingling/results/transition_probabilities.json',
         dimensions=dimensions,
         walk_length=walk_length,
         num_walks=num_walks,
@@ -285,7 +285,7 @@ def _train_evaluate_generate_artifacts(
                 'ROC': dc_roc,
                 'Prediction Probability': dc_yp
             },
-            'Syptomatic': {
+            'Symptomatic': {
                 'ROC': sy_roc,
                 'Prediction Probability': sy_yp
             },
