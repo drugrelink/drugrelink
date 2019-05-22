@@ -20,6 +20,7 @@ from .node2vec_utils import fit_node2vec
 from .pairs import test_pairs, train_pairs
 from .subgraph import generate_subgraph
 from .train import train_logistic_regression, validate
+from .permutation_convert import convert
 
 logger = logging.getLogger(__name__)
 
@@ -29,10 +30,12 @@ def run_node2vec_graph(
         dimensions: int,
         walk_length: int,
         num_walks: int,
-        window:int,
+        window: int,
         embedder: str = "hadamard",
+        permutation_number=None,
         output_directory: Optional[str] = None,
         input_directory: Optional[str] = None,
+
 ) -> None:
     """Run the Node2Vec pipeline."""
     if output_directory is None:
@@ -53,12 +56,14 @@ def run_node2vec_graph(
         indent=2,
         sort_keys =True)
     data_paths = get_data_paths(directory=input_directory)
-    #transition_probability_path = os.path.join(output_directory, 'transition_probabilities.json')
-
-    graph = create_himmelstein_graph(data_paths.node_data_path, data_paths.edge_data_path)
+    transition_probability_path = os.path.join(output_directory, 'transition_probabilities.json')
+    if not permutation_number:
+        graph = create_himmelstein_graph(data_paths.node_data_path, data_paths.edge_data_path)
+    elif permutation_number==1:
+        graph = convert(data_paths.permutation_paths[permutation_number-1])
     model = fit_node2vec(
         graph,
-        transition_probabilities_path='/home/bio/groupshare/lingling/results/transition_probabilities.json',
+        transition_probabilities_path=transition_probability_path,
         dimensions=dimensions,
         walk_length=walk_length,
         num_walks=num_walks,

@@ -40,6 +40,8 @@ def main(config: str, debug: bool):
 
         elif graph_type == 'subgraph':
             return run_node2vec_subgraph(**config)
+        elif graph_type == 'permutation':
+            return run_node2vec_graph(**config)
 
         else:
             click.echo(f'Unsupported graph_type={graph_type}')
