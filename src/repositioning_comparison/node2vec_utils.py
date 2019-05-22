@@ -66,6 +66,7 @@ def fit_node2vec(
         walk_length=30,
         dimensions=64,
         num_walks=10,
+        window=10
 
 ) -> gensim.models.Word2Vec:
     """
@@ -91,5 +92,5 @@ def fit_node2vec(
         workers=workers,
         transition_probabilities_path=transition_probabilities_path,
     )
-    word2vec_model = node2vec_model.fit(window=10, min_count=1, batch_words=4)
+    word2vec_model = node2vec_model.fit(window=window, min_count=1, batch_words=4)
     return word2vec_model

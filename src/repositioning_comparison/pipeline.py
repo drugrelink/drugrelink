@@ -29,6 +29,7 @@ def run_node2vec_graph(
         dimensions: int,
         walk_length: int,
         num_walks: int,
+        window:int,
         embedder: str = "hadamard",
         output_directory: Optional[str] = None,
         input_directory: Optional[str] = None,
