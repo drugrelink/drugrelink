@@ -60,7 +60,7 @@ def run_node2vec_graph(
     if not permutation_number:
         graph = create_himmelstein_graph(data_paths.node_data_path, data_paths.edge_data_path)
     elif permutation_number==1:
-        graph = convert(data_paths.permutation_paths[permutation_number-1])
+        graph = convert(data_paths.permutation_paths[permutation_number-1],permutation_number)
     model = fit_node2vec(
         graph,
         transition_probabilities_path=transition_probability_path,
