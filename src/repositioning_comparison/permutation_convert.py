@@ -16,13 +16,10 @@ def convert(path,order):
     him_per = readwrite.read_graph(path)
     nodepath = os.path.join(PERMUTATION_DIRECTORY,'permutation_node{}.tsv'.format(order))
     edgepath = os.path.join(PERMUTATION_DIRECTORY,'permutation_edge{}.sif.gz'.format(order))
-    with open(nodepath,'w') as node_path:
-        hetio.readwrite.write_nodetable(him_per, node_path)
-    with open(edgepath,'w') as edge_path:
-        hetio.readwrite.write_sif(him_per, edge_path)
-    dfhimnode = pd.read_csv(node_path, sep='\t')
-
-    dfhimedge = pd.read_csv(edge_path, sep='\t')
+    hetio.readwrite.write_nodetable(him_per, nodepath)
+    hetio.readwrite.write_sif(him_per, edgepath)
+    dfhimnode = pd.read_csv(nodepath, sep='\t')
+    dfhimedge = pd.read_csv(edgepath, sep='\t')
 
     himgraph = nx.Graph()
     for index, row in dfhimnode.iterrows():
