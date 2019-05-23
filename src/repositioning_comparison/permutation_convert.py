@@ -14,9 +14,11 @@ PERMUTATION_DIRECTORY = os.environ.get('REPOSITIONING_COMPARISON_DIRECTORY', DEF
 
 def convert(path,order):
     him_per = readwrite.read_graph(path)
-    with open(PERMUTATION_DIRECTORY, 'permutation_node{}.tsv'.format(order),'w') as node_path:
+    nodepath = os.path.join(PERMUTATION_DIRECTORY,'permutation_node{}.tsv'.format(order))
+    edgepath = os.path.join(PERMUTATION_DIRECTORY,'permutation_edge{}.sif.gz'.format(order))
+    with open(nodepath,'w') as node_path:
         hetio.readwrite.write_nodetable(him_per, node_path)
-    with open(PERMUTATION_DIRECTORY, 'permutation_edge{}.sif.gz'.format(order),'w') as edge_path:
+    with open(edgepath,'w') as edge_path:
         hetio.readwrite.write_sif(him_per, edge_path)
     dfhimnode = pd.read_csv(node_path, sep='\t')
 
