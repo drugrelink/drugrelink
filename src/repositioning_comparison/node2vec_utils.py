@@ -91,6 +91,7 @@ def fit_node2vec(
         num_walks=num_walks,
         workers=workers,
         transition_probabilities_path=transition_probabilities_path,
+        window=window
     )
     word2vec_model = node2vec_model.fit(window=window, min_count=1, batch_words=4)
     return word2vec_model

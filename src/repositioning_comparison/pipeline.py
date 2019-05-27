@@ -67,6 +67,7 @@ def run_node2vec_graph(
         dimensions=dimensions,
         walk_length=walk_length,
         num_walks=num_walks,
+        window=window
     )
     click.echo('saving word2vec')
     model.save(os.path.join(output_directory, 'word2vec_model.pickle'))
