@@ -56,14 +56,14 @@ def run_node2vec_graph(
         indent=2,
         sort_keys =True)
     data_paths = get_data_paths(directory=input_directory)
-    transition_probability_path = os.path.join(output_directory, 'transition_probabilities.json')
+    #transition_probability_path = os.path.join(output_directory, 'transition_probabilities.json')
     if not permutation_number:
         graph = create_himmelstein_graph(data_paths.node_data_path, data_paths.edge_data_path)
     elif permutation_number==1:
         graph = convert(data_paths.permutation_paths[permutation_number-1],permutation_number)
     model = fit_node2vec(
         graph,
-        transition_probabilities_path=transition_probability_path,
+        transition_probabilities_path='/home/bio/groupshare/lingling/results/transition_probabilities.json',
         dimensions=dimensions,
         walk_length=walk_length,
         num_walks=num_walks,
