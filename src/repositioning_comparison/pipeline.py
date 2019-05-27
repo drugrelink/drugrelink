@@ -49,7 +49,7 @@ def run_node2vec_graph(
             'num_walks': num_walks,
             'embedder':embedder,
             'input_directory': input_directory,
-            'output_directory': output_directory
+            'output_directory': output_directory,
             'window':window
 
         },
