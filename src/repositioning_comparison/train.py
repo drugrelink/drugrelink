@@ -14,9 +14,10 @@ def train_logistic_regression(x, y) -> logistic.LogitNet:
 def validate(logistic_regression: logistic.LogitNet, x, y) -> float:
     x = np.array(x)
     scores = logistic_regression.predict_proba(x)
+    label = logistic_regression.predict(x)
     y_score = []
     for i in scores:
         y_score.append(i[1])
     roc = roc_auc_score(y, y_score)
 
-    return roc, scores
+    return roc, scores,label

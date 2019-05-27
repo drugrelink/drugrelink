@@ -50,6 +50,7 @@ def run_node2vec_graph(
             'embedder':embedder,
             'input_directory': input_directory,
             'output_directory': output_directory
+            'window':window
 
         },
         file,
@@ -270,31 +271,39 @@ def _train_evaluate_generate_artifacts(
             'y_probability': y_pro,
         }
     else:
-        dm_roc, dm_yp = validate(logistic_regression, test_dm_vectors, test_dm_labels)
-        ct_roc, ct_yp = validate(logistic_regression, test_ct_vectors, test_ct_labels)
-        dc_roc, dc_yp = validate(logistic_regression, test_dc_vectors, test_dc_labels)
-        sy_roc, sy_yp = validate(logistic_regression, test_sy_vectors, test_sy_labels)
+        dm_roc, dm_yp, dm_pre = validate(logistic_regression, test_dm_vectors, test_dm_labels)
+        ct_roc, ct_yp, ct_pre = validate(logistic_regression, test_ct_vectors, test_ct_labels)
+        dc_roc, dc_yp, dc_pre = validate(logistic_regression, test_dc_vectors, test_dc_labels)
+        sy_roc, sy_yp, sy_pre = validate(logistic_regression, test_sy_vectors, test_sy_labels)
         dm_yp = list(map(list, dm_yp))
         ct_yp = list(map(list, ct_yp))
         dc_yp = list(map(list, dc_yp))
         sy_yp = list(map(list, sy_yp))
+        dm_pre = list(map(list,dm_pre))
+        ct_pre = list(map(list,ct_pre))
+        dc_pre = list(map(list,dc_pre))
+        sy_pre = list(map(list,sy_pre))
 
         roc_dict = {
             "Disease Modifying": {
                 "ROC": dm_roc,
-                'Prediction Probability': dm_yp
+                'Prediction Probability': dm_yp,
+                'Predicted Label':dm_pre
             },
             'Clinical Trial': {
                 'ROC': ct_roc,
-                'Prediction Probability': ct_yp
+                'Prediction Probability': ct_yp,
+                'Predicted Label':ct_pre
             },
             'Drug Central': {
                 'ROC': dc_roc,
-                'Prediction Probability': dc_yp
+                'Prediction Probability': dc_yp,
+                'Predicted Label':dc_pre
             },
             'Symptomatic': {
                 'ROC': sy_roc,
-                'Prediction Probability': sy_yp
+                'Prediction Probability': sy_yp,
+                'Predicted Label':sy_pre
             },
 
         }
