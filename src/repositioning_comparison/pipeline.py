@@ -279,10 +279,10 @@ def _train_evaluate_generate_artifacts(
         ct_yp = list(map(list, ct_yp))
         dc_yp = list(map(list, dc_yp))
         sy_yp = list(map(list, sy_yp))
-        dm_pre = list(dm_pre)
-        ct_pre = list(ct_pre)
-        dc_pre = list(dc_pre)
-        sy_pre = list(sy_pre)
+        dm_pre = list(map(int, dm_pre))
+        ct_pre = list(map(int, ct_pre))
+        dc_pre = list(map(int, dc_pre))
+        sy_pre = list(map(int, sy_pre))
 
         roc_dict = {
             "Disease Modifying": {
