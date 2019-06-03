@@ -45,22 +45,7 @@ def run_node2vec_graph(
         output_directory = os.path.join(RESULTS_DIRECTORY, datetime.now().strftime(f'node2vec_{embedder}_%Y%m%d_%H%M'))
         os.makedirs(output_directory, exist_ok=True)
 
-    with open(os.path.join(output_directory, 'metadata.json'),'w') as file:
-        json.dump({
-            'dimensions': dimensions,
-            'walk_length': walk_length,
-            'num_walks': num_walks,
-            'embedder':embedder,
-            'input_directory': input_directory,
-            'output_directory': output_directory,
-            'window': window,
-            'p':p,
-            'q':q
 
-        },
-        file,
-        indent=2,
-        sort_keys =True)
     if repeat:
         n=len(list(os.walk(output_directory)))
         for i in range(n,repeat+1):
