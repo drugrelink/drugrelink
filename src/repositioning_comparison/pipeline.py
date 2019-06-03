@@ -65,7 +65,7 @@ def run_node2vec_graph(
         n=len(list(os.walk(output_directory)))
         for i in range(n,repeat+1):
             if n ==0:
-                sub_output_directory = os.path.join(output_directory,n+1)
+                sub_output_directory = os.path.join(output_directory, str(n+1))
                 data_paths = get_data_paths(directory=input_directory)
                 transition_probability_path = os.path.join(sub_output_directory, 'transition_probabilities.json')
                 if not permutation_number:
@@ -115,8 +115,8 @@ def run_node2vec_graph(
                     )
 
             else:
-                sub_output_directory = os.path.join(output_directory,n+1)
-                first_output_directory = os.path.join(output_directory,1)
+                sub_output_directory = os.path.join(output_directory,str(n+1))
+                first_output_directory = os.path.join(output_directory,'1')
                 data_paths = get_data_paths(directory=input_directory)
                 transition_probability_path = os.path.join(first_output_directory, 'transition_probabilities.json')
                 if not permutation_number:
