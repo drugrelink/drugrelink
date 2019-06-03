@@ -66,18 +66,16 @@ def run_node2vec_graph(
     #validation_directory = os.path.join(output_directory,'validations')
     #os.makedirs(validation_directory, exist_ok=True)
     if repeat:
+        data_paths = get_data_paths(directory=input_directory)
         dir_number =0
         for name in os.listdir(output_directory):
             path= os.path.join(output_directory,name)
             if os.path.isdir(path):
                 dir_number +=1
         for i in range(dir_number+1,repeat+1):
-            if i ==1:
-                transition_probability_path = os.path.join(output_directory, 'transition_probabilities.json')
-            else:
-                first_output_directory = os.path.join(output_directory,'1')
-                transition_probability_path = os.path.join(first_output_directory, 'transition_probabilities.json')
-            data_paths = get_data_paths(directory=input_directory)
+
+            transition_probability_path = os.path.join(output_directory, 'transition_probabilities.json')
+
             sub_output_directory = os.path.join(output_directory,str(i))
             os.makedirs(sub_output_directory)
             if not permutation_number:
@@ -92,10 +90,8 @@ def run_node2vec_graph(
                 num_walks=num_walks,
                 window=window,
                 p=p,
-                q=q
-                    )
-            click.echo('saving word2vec')
-            model.save(os.path.join(output_directory, 'word2vec_model.pickle'))
+                q=q)
+            model.save(os.path.join(sub_output_directory, 'word2vec_model.pickle'))
             embedder_function = EMBEDDERS[embedder]
             train_list, train_labels = train_pairs(data_paths.transformed_features_path)
             #  TODO why build multiple embedders separately and not single one then split vectors after the fact?
