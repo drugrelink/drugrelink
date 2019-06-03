@@ -35,6 +35,9 @@ def run_node2vec_graph(
         permutation_number=None,
         output_directory: Optional[str] = None,
         input_directory: Optional[str] = None,
+        repeat: Optional[int] = None,
+        p: Optional[int] = None,
+        q: Optional[int] = None
 
 ) -> None:
     """Run the Node2Vec pipeline."""
@@ -50,59 +53,117 @@ def run_node2vec_graph(
             'embedder':embedder,
             'input_directory': input_directory,
             'output_directory': output_directory,
-            'window':window
+            'window': window,
+            'p':p,
+            'q':q
 
         },
         file,
         indent=2,
         sort_keys =True)
-    data_paths = get_data_paths(directory=input_directory)
-    #transition_probability_path = os.path.join(output_directory, 'transition_probabilities.json')
-    if not permutation_number:
-        graph = create_himmelstein_graph(data_paths.node_data_path, data_paths.edge_data_path)
-    elif permutation_number==1:
-        graph = convert(data_paths.permutation_paths[permutation_number-1],permutation_number)
-    model = fit_node2vec(
-        graph,
-        transition_probabilities_path='/home/bio/groupshare/lingling/results/transition_probabilities.json',
-        dimensions=dimensions,
-        walk_length=walk_length,
-        num_walks=num_walks,
-        window=window
-    )
-    click.echo('saving word2vec')
-    model.save(os.path.join(output_directory, 'word2vec_model.pickle'))
-    embedder_function = EMBEDDERS[embedder]
-    train_list, train_labels = train_pairs(data_paths.transformed_features_path)
-    #  TODO why build multiple embedders separately and not single one then split vectors after the fact?
-    train_vectors = embedder_function(model, train_list)
-    disease_modifying, clinical_trials, drug_central, symptomatic = test_pairs(
-        validation_path=data_paths.validate_data_path,
-        symptomatic_path=data_paths.symptomatic_data_path,
-        train_path=data_paths.transformed_features_path,
-    )
-    test_dm_vectors = embedder_function(model, disease_modifying[0])
-    test_dm_labels = disease_modifying[1]
-    test_ct_vectors = embedder_function(model, clinical_trials[0])
-    test_ct_labels = clinical_trials[1]
-    test_dc_vectors = embedder_function(model, drug_central[0])
-    test_dc_labels = drug_central[1]
-    test_sy_vectors = embedder_function(model, symptomatic[0])
-    test_sy_labels = symptomatic[1]
+    if repeat:
+        n=len(list(os.walk(output_directory)))
+        for i in range(n,repeat+1):
+            if n ==0:
+                sub_output_directory = os.path.join(output_directory,n+1)
+                data_paths = get_data_paths(directory=input_directory)
+                transition_probability_path = os.path.join(sub_output_directory, 'transition_probabilities.json')
+                if not permutation_number:
+                        graph = create_himmelstein_graph(data_paths.node_data_path, data_paths.edge_data_path)
+                elif permutation_number==1:
+                        graph = convert(data_paths.permutation_paths[permutation_number-1],permutation_number)
+                model = fit_node2vec(
+                    graph,
+                    transition_probabilities_path=transition_probability_path,
+                    dimensions=dimensions,
+                    walk_length=walk_length,
+                    num_walks=num_walks,
+                    window=window
+                        )
+                click.echo('saving word2vec')
+                model.save(os.path.join(output_directory, 'word2vec_model.pickle'))
+                embedder_function = EMBEDDERS[embedder]
+                train_list, train_labels = train_pairs(data_paths.transformed_features_path)
+                #  TODO why build multiple embedders separately and not single one then split vectors after the fact?
+                train_vectors = embedder_function(model, train_list)
+                disease_modifying, clinical_trials, drug_central, symptomatic = test_pairs(
+                validation_path=data_paths.validate_data_path,
+                symptomatic_path=data_paths.symptomatic_data_path,
+                train_path=data_paths.transformed_features_path,
+                 )
+                test_dm_vectors = embedder_function(model, disease_modifying[0])
+                test_dm_labels = disease_modifying[1]
+                test_ct_vectors = embedder_function(model, clinical_trials[0])
+                test_ct_labels = clinical_trials[1]
+                test_dc_vectors = embedder_function(model, drug_central[0])
+                test_dc_labels = drug_central[1]
+                test_sy_vectors = embedder_function(model, symptomatic[0])
+                test_sy_labels = symptomatic[1]
 
-    _train_evaluate_generate_artifacts(
-        output_directory,
-        train_vectors,
-        train_labels,
-        test_dm_vectors,
-        test_dm_labels,
-        test_ct_vectors,
-        test_ct_labels,
-        test_dc_vectors,
-        test_dc_labels,
-        test_sy_vectors,
-        test_sy_labels,
-    )
+                _train_evaluate_generate_artifacts(
+                    sub_output_directory,
+                    train_vectors,
+                    train_labels,
+                    test_dm_vectors,
+                    test_dm_labels,
+                    test_ct_vectors,
+                    test_ct_labels,
+                    test_dc_vectors,
+                    test_dc_labels,
+                    test_sy_vectors,
+                    test_sy_labels,
+                    )
+
+            else:
+                sub_output_directory = os.path.join(output_directory,n+1)
+                first_output_directory = os.path.join(output_directory,1)
+                data_paths = get_data_paths(directory=input_directory)
+                transition_probability_path = os.path.join(first_output_directory, 'transition_probabilities.json')
+                if not permutation_number:
+                        graph = create_himmelstein_graph(data_paths.node_data_path, data_paths.edge_data_path)
+                elif permutation_number==1:
+                        graph = convert(data_paths.permutation_paths[permutation_number-1],permutation_number)
+                model = fit_node2vec(
+                    graph,
+                    transition_probabilities_path=transition_probability_path,
+                    dimensions=dimensions,
+                    walk_length=walk_length,
+                    num_walks=num_walks,
+                    window=window
+                        )
+                click.echo('saving word2vec')
+                model.save(os.path.join(output_directory, 'word2vec_model.pickle'))
+                embedder_function = EMBEDDERS[embedder]
+                train_list, train_labels = train_pairs(data_paths.transformed_features_path)
+                #  TODO why build multiple embedders separately and not single one then split vectors after the fact?
+                train_vectors = embedder_function(model, train_list)
+                disease_modifying, clinical_trials, drug_central, symptomatic = test_pairs(
+                validation_path=data_paths.validate_data_path,
+                symptomatic_path=data_paths.symptomatic_data_path,
+                train_path=data_paths.transformed_features_path,
+                 )
+                test_dm_vectors = embedder_function(model, disease_modifying[0])
+                test_dm_labels = disease_modifying[1]
+                test_ct_vectors = embedder_function(model, clinical_trials[0])
+                test_ct_labels = clinical_trials[1]
+                test_dc_vectors = embedder_function(model, drug_central[0])
+                test_dc_labels = drug_central[1]
+                test_sy_vectors = embedder_function(model, symptomatic[0])
+                test_sy_labels = symptomatic[1]
+
+                _train_evaluate_generate_artifacts(
+                    sub_output_directory,
+                    train_vectors,
+                    train_labels,
+                    test_dm_vectors,
+                    test_dm_labels,
+                    test_ct_vectors,
+                    test_ct_labels,
+                    test_dc_vectors,
+                    test_dc_labels,
+                    test_sy_vectors,
+                    test_sy_labels,
+                    )
 
 
 def run_node2vec_subgraph(
