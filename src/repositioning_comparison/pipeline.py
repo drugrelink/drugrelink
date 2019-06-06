@@ -74,9 +74,11 @@ def run_node2vec_graph(
                 dir_number +=1
         for i in range(dir_number+1,repeat+1):
             if p==1 and q==1:
-                transition_probability_path = '/home/bio/groupshare/lingling/results/transition_probabilities.json'
-            else:
-                transition_probability_path = os.path.join(output_directory, 'transition_probabilities.json')
+                transition_probability_path = '/home/bio/groupshare/lingling/results/transition_probabilities/p1q1/transition_probabilities.json'
+            elif p==1 and q==0.5:
+                transition_probability_path = '/home/bio/groupshare/lingling/results/transition_probabilities/p1q0_5/transition_probabilities.json'
+            elif p==1 and q==2:
+                transition_probability_path = '/home/bio/groupshare/lingling/results/transition_probabilities/p1q2/transition_probabilities.json'
 
             sub_output_directory = os.path.join(output_directory,str(i))
             os.makedirs(sub_output_directory)
