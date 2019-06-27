@@ -47,10 +47,22 @@ def main(config: str, debug: bool):
             click.echo(f'Unsupported graph_type={graph_type}')
             return sys.exit(1)
 
+
+
+    elif method == 'edge2vec':
+        if graph_type == 'graph':
+            return run_edge2vec_graph(**config)
+        elif graph_type == 'subgraph':
+            return run_edge2vec_subgraph(**config)
+        elif graph_type == 'permutation':
+            return run_edge2vec_graph(**config)
+        else:
+            click.echo(f'Unsupported graph_type={graph_type}')
+            return sys.exit(1)
+
     else:
         click.echo(f'Unsupported method={method}')
         return sys.exit(1)
-
 
 if __name__ == '__main__':
     main()

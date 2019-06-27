@@ -21,6 +21,7 @@ from .pairs import test_pairs, train_pairs
 from .subgraph import generate_subgraph
 from .train import train_logistic_regression, validate
 from .permutation_convert import convert
+from edge2vec import calculate_edge_transition_matrix, train, read_graph
 
 logger = logging.getLogger(__name__)
 

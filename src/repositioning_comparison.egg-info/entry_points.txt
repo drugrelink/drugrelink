@@ -1,0 +1,3 @@
+[console_scripts]
+repositioning-comparison = repositioning_comparison.cli:main
+

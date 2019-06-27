@@ -1,0 +1,36 @@
+Metadata-Version: 1.2
+Name: repositioning-comparison
+Version: 0.0.4.dev0
+Summary: This package get to master thesis of Lingling Xu
+Home-page: https://github.com/lingling93/comparison
+Author: Lingling Xu
+Author-email: linglingxu993@gmail.com
+License: MIT
+Description: master_thesis
+        =============
+        This package gets the master theis of Lingling Xu
+        
+        Installation
+        ------------
+        Install from `GitHub <https://github.com/lingling93/comparison>`_ with:
+        
+        .. code-block:: sh
+        
+            $ git clone https://github.com/lingling93/comparison.git repositioning-comparison
+            $ cd repositioning-comparison
+            $ pip install -e .
+        
+        CLI Usage
+        ---------
+        Run on a subgraph from Himmelstein with:
+        
+        .. code-block:: sh
+        
+            $ repositioning-comparion subgraph
+        
+Keywords: lingling,thesis,NRL
+Platform: UNKNOWN
+Classifier: Lisence :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3.7
+Requires-Python: >=3.6
