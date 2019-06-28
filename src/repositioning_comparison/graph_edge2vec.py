@@ -17,10 +17,9 @@ def prepare_edge2vec(edge_path, save_path):
         row['metaedge'] = metaedge_map[row['metaedge']]
     a = len(edge_df)
     id_list=list(range(1,a+1))
-    id_list[-1]
     edge_df.insert(loc=3, column='id', value=id_list)
     column = ['source','target','metaedge','id']
     edge_df=edge_df.reindex(columns=column)
-    edge_df.csv(save_path, header=None, index=None, sep=' ')
+    edge_df.to_csv(save_path, header=None, index=None, sep=' ')
 
 
