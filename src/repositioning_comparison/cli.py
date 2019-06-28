@@ -8,7 +8,7 @@ import sys
 
 import click
 
-from .pipeline import run_node2vec_graph, run_node2vec_subgraph
+from .pipeline import run_node2vec_graph, run_node2vec_subgraph, run_edge2vec_graph
 
 __all__ = [
     'main',
@@ -50,12 +50,10 @@ def main(config: str, debug: bool):
 
 
     elif method == 'edge2vec':
-        if graph_type == 'graph':
+        if graph_type == 'graph' or 'permutation':
             return run_edge2vec_graph(**config)
-        elif graph_type == 'subgraph':
-            return run_edge2vec_subgraph(**config)
-        elif graph_type == 'permutation':
-            return run_edge2vec_graph(**config)
+
+
         else:
             click.echo(f'Unsupported graph_type={graph_type}')
             return sys.exit(1)

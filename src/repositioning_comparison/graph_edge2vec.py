@@ -5,8 +5,8 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def prepare_edge2vec(path):
-    with gzip.open(path,'rb') as file:
+def prepare_edge2vec(edge_path, save_path):
+    with gzip.open(edge_path,'rb') as file:
         edge_df = pd.read_csv(file, sep='\t')
     ser = edge_df['metaedge'].value_counts()
     name_list = ser.keys()
@@ -21,5 +21,6 @@ def prepare_edge2vec(path):
     edge_df.insert(loc=3, column='id', value=id_list)
     column = ['source','target','metaedge','id']
     edge_df=edge_df.reindex(columns=column)
-    return edge_df
+    edge_df.csv(save_path, header=None, index=None, sep=' ')
+
 

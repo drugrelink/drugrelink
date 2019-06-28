@@ -46,7 +46,7 @@ class DataPaths:
     validate_data_path: str
     symptomatic_data_path: str
     permutation_paths: List[str]
-
+    data_edge2vec_path: str
 
 def get_data_paths(directory: Optional[str] = None) -> DataPaths:
     """Ensure Himmelstein's data files are downloaded."""
@@ -91,7 +91,7 @@ def get_data_paths(directory: Optional[str] = None) -> DataPaths:
             logger.warning(f'downloading {url}')
             urlretrieve(url, permutation_data_path)
         permutation_paths.append(permutation_data_path)
-
+    data_edge2vec_path = os.path.join(directory, 'data_edge2vec')
     return DataPaths(
         node_data_path=node_data_path,
         edge_data_path=edge_data_path,
@@ -99,4 +99,5 @@ def get_data_paths(directory: Optional[str] = None) -> DataPaths:
         validate_data_path=validate_data_path,
         symptomatic_data_path=symptomatic_data_path,
         permutation_paths=permutation_paths,
+        data_edge2vec_path = data_edge2vec_path
     )

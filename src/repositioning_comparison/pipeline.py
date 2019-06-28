@@ -22,6 +22,7 @@ from .subgraph import generate_subgraph
 from .train import train_logistic_regression, validate
 from .permutation_convert import convert
 from edge2vec import calculate_edge_transition_matrix, train, read_graph
+from .graph_edge2vec import prepare_edge2vec
 
 logger = logging.getLogger(__name__)
 
@@ -131,6 +132,104 @@ def run_node2vec_graph(
                     )
 
 
+def run_edge2vec_graph(
+        *,
+        dimensions: int,
+        walk_length: int,
+        num_walks: int,
+        window: int,
+        embedder: str = "hadamard",
+        permutation_number=None,
+        output_directory: Optional[str] = None,
+        input_directory: Optional[str] = None,
+        repeat = 1,
+        p: Optional[int] = None,
+        q: Optional[int] = None,
+        number_edge_types: int,
+        directed: bool=False,
+        e_step: int,
+        em_iteration: int,
+) -> None:
+    data_paths = get_data_paths(directory=input_directory)
+    edge_path = data_paths.edge_data_path
+    data_edge2vec_path = data_paths.data_edge2vec_path
+
+    prepare_edge2vec(edge_path,data_edge2vec_path)
+    graph = read_graph(data_edge2vec_path,)
+    if repeat:
+        data_paths = get_data_paths(directory=input_directory)
+        dir_number =0
+        for name in os.listdir(output_directory):
+            path= os.path.join(output_directory,name)
+            if os.path.isdir(path):
+                dir_number +=1
+        for i in range(dir_number+1,repeat+1):
+            transition_probabilities_path = os.path.join(output_directory, 'transition_probilities_path')
+            if transition_probabilities_path is not None and os.path.exists(transition_probabilities_path):
+                with open(transition_probabilities_path, 'rb') as file:
+                    transition_probabilities = pickle.load(file)
+                logger.warning(f'Loaded pre-computed probabilities from {transition_probabilities_path}')
+            else:
+                transition_probabilities = calculate_edge_transition_matrix(graph=graph,
+                                                                            number_edge_types=number_edge_types,
+                                                                            directed=directed,
+                                                                            e_step=e_step,
+                                                                            em_iteration=em_iteration,
+                                                                            number_walks =num_walks,
+                                                                            walk_length =walk_length,
+                                                                            p=p,
+                                                                            q=q
+                                                                            )
+
+            if transition_probabilities_path is not None:
+                    logger.warning(f'Dumping pre-computed probabilities to {transition_probabilities_path}')
+                    with open(transition_probabilities_path, 'wb') as file:
+                        pickle.dump(transition_probabilities, file)
+            sub_output_directory = os.path.join(output_directory,str(i))
+            os.makedirs(sub_output_directory)
+            if not permutation_number:
+                    graph = create_himmelstein_graph(data_paths.node_data_path, data_paths.edge_data_path)
+            elif permutation_number==1:
+                    graph = convert(data_paths.permutation_paths[permutation_number-1],permutation_number)
+            model = train(transition_matrix=transition_probabilities,
+                          graph=graph,
+                          number_walks=num_walks,
+                          walk_length=walk_length,
+                          p=p,
+                          q=q,
+                          size=dimensions,
+                          window=window)
+            model.save(os.path.join(sub_output_directory, 'word2vec_model.pickle'))
+            embedder_function = EMBEDDERS[embedder]
+            train_list, train_labels = train_pairs(data_paths.transformed_features_path)
+            #  TODO why build multiple embedders separately and not single one then split vectors after the fact?
+            train_vectors = embedder_function(model, train_list)
+            disease_modifying, clinical_trials, drug_central, symptomatic = test_pairs(
+            validation_path=data_paths.validate_data_path,
+            symptomatic_path=data_paths.symptomatic_data_path,
+            train_path=data_paths.transformed_features_path,
+             )
+            test_dm_vectors = embedder_function(model, disease_modifying[0])
+            test_dm_labels = disease_modifying[1]
+            test_ct_vectors = embedder_function(model, clinical_trials[0])
+            test_ct_labels = clinical_trials[1]
+            test_dc_vectors = embedder_function(model, drug_central[0])
+            test_dc_labels = drug_central[1]
+            test_sy_vectors = embedder_function(model, symptomatic[0])
+            test_sy_labels = symptomatic[1]
+            _train_evaluate_generate_artifacts(
+                    sub_output_directory,
+                    train_vectors,
+                    train_labels,
+                    test_dm_vectors,
+                    test_dm_labels,
+                    test_ct_vectors,
+                    test_ct_labels,
+                    test_dc_vectors,
+                    test_dc_labels,
+                    test_sy_vectors,
+                    test_sy_labels,
+                    )
 
 
 def run_node2vec_subgraph(
