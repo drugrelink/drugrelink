@@ -11,18 +11,18 @@ from typing import Optional
 
 import click
 import joblib
+from edge2vec import calculate_edge_transition_matrix, train, read_graph
 
 from .constants import RESULTS_DIRECTORY
 from .create_graph import create_himmelstein_graph
 from .download import get_data_paths
 from .embedders import EMBEDDERS
+from .graph_edge2vec import prepare_edge2vec
 from .node2vec_utils import fit_node2vec
 from .pairs import test_pairs, train_pairs
+from .permutation_convert import convert
 from .subgraph import generate_subgraph
 from .train import train_logistic_regression, validate
-from .permutation_convert import convert
-from edge2vec import calculate_edge_transition_matrix, train, read_graph
-from .graph_edge2vec import prepare_edge2vec
 
 logger = logging.getLogger(__name__)
 
@@ -37,59 +37,73 @@ def run_node2vec_graph(
         permutation_number=None,
         output_directory: Optional[str] = None,
         input_directory: Optional[str] = None,
-        repeat = 1,
+        repeat=1,
         p: Optional[int] = None,
         q: Optional[int] = None
 
 ) -> None:
-    """Run the Node2Vec pipeline."""
+    """
+    Run the node2vec pipeline
+    :param dimensions: The number of dimensions of embedding vectors
+    :param walk_length: The length of one random walk.
+    :param num_walks: The number of random walk iterating the graph
+    :param window: Window size in word2vec
+    :param embedder: Method of calculating edge vectors from node vectors
+    :param permutation_number: The number of permutation graph, should be 1-5.
+    :param output_directory: The path of output directory
+    :param input_directory: The path of input directory
+    :param repeat: Repeat times of one experiment
+    :param p: Return hyper parameter
+    :param q:Inout paramete
+    :return: None
+    """
     if output_directory is None:
         output_directory = os.path.join(RESULTS_DIRECTORY, datetime.now().strftime(f'node2vec_{embedder}_%Y%m%d_%H%M'))
         os.makedirs(output_directory, exist_ok=True)
 
-    with open(os.path.join(output_directory, 'metadata.json'),'w') as file:
+    with open(os.path.join(output_directory, 'metadata.json'), 'w') as file:
 
         json.dump({
             'dimensions': dimensions,
             'walk_length': walk_length,
             'num_walks': num_walks,
-            'embedder':embedder,
+            'embedder': embedder,
             'input_directory': input_directory,
             'output_directory': output_directory,
             'window': window,
             'p': p,
             'q': q,
-            'repeat':repeat
+            'repeat': repeat
 
         },
-        file,
-        indent=2,
-        sort_keys =True)
-    #validation_directory = os.path.join(output_directory,'validations')
-    #os.makedirs(validation_directory, exist_ok=True)
+            file,
+            indent=2,
+            sort_keys=True)
+    # validation_directory = os.path.join(output_directory,'validations')
+    # os.makedirs(validation_directory, exist_ok=True)
     if repeat:
         data_paths = get_data_paths(directory=input_directory)
-        dir_number =0
+        dir_number = 0
         for name in os.listdir(output_directory):
-            path= os.path.join(output_directory,name)
+            path = os.path.join(output_directory, name)
             if os.path.isdir(path):
-                dir_number +=1
-        for i in range(dir_number+1,repeat+1):
-            if p==1 and q==1:
+                dir_number += 1
+        for i in range(dir_number + 1, repeat + 1):
+            if p == 1 and q == 1:
                 transition_probability_path = '/home/bio/groupshare/lingling/results/transition_probabilities/p1q1/transition_probabilities.json'
-            elif p==1 and q==0.5:
+            elif p == 1 and q == 0.5:
                 transition_probability_path = '/home/bio/groupshare/lingling/results/transition_probabilities/p1q0_5/transition_probabilities.json'
-            elif p==1 and q==2:
+            elif p == 1 and q == 2:
                 transition_probability_path = '/home/bio/groupshare/lingling/results/transition_probabilities/p1q2/transition_probabilities.json'
             else:
-                transition_probability_path = os.path.join(output_directory,'transition_probabilities.json')
+                transition_probability_path = os.path.join(output_directory, 'transition_probabilities.json')
 
-            sub_output_directory = os.path.join(output_directory,str(i))
+            sub_output_directory = os.path.join(output_directory, str(i))
             os.makedirs(sub_output_directory)
             if not permutation_number:
-                    graph = create_himmelstein_graph(data_paths.node_data_path, data_paths.edge_data_path)
-            elif permutation_number==1:
-                    graph = convert(data_paths.permutation_paths[permutation_number-1],permutation_number)
+                graph = create_himmelstein_graph(data_paths.node_data_path, data_paths.edge_data_path)
+            elif permutation_number == 1:
+                graph = convert(data_paths.permutation_paths[permutation_number - 1], permutation_number)
             model = fit_node2vec(
                 graph,
                 transition_probabilities_path=transition_probability_path,
@@ -105,10 +119,10 @@ def run_node2vec_graph(
             #  TODO why build multiple embedders separately and not single one then split vectors after the fact?
             train_vectors = embedder_function(model, train_list)
             disease_modifying, clinical_trials, drug_central, symptomatic = test_pairs(
-            validation_path=data_paths.validate_data_path,
-            symptomatic_path=data_paths.symptomatic_data_path,
-            train_path=data_paths.transformed_features_path,
-             )
+                validation_path=data_paths.validate_data_path,
+                symptomatic_path=data_paths.symptomatic_data_path,
+                train_path=data_paths.transformed_features_path,
+            )
             test_dm_vectors = embedder_function(model, disease_modifying[0])
             test_dm_labels = disease_modifying[1]
             test_ct_vectors = embedder_function(model, clinical_trials[0])
@@ -118,18 +132,18 @@ def run_node2vec_graph(
             test_sy_vectors = embedder_function(model, symptomatic[0])
             test_sy_labels = symptomatic[1]
             _train_evaluate_generate_artifacts(
-                    sub_output_directory,
-                    train_vectors,
-                    train_labels,
-                    test_dm_vectors,
-                    test_dm_labels,
-                    test_ct_vectors,
-                    test_ct_labels,
-                    test_dc_vectors,
-                    test_dc_labels,
-                    test_sy_vectors,
-                    test_sy_labels,
-                    )
+                sub_output_directory,
+                train_vectors,
+                train_labels,
+                test_dm_vectors,
+                test_dm_labels,
+                test_ct_vectors,
+                test_ct_labels,
+                test_dc_vectors,
+                test_dc_labels,
+                test_sy_vectors,
+                test_sy_labels,
+            )
 
 
 def run_edge2vec_graph(
@@ -142,11 +156,11 @@ def run_edge2vec_graph(
         permutation_number=None,
         output_directory: Optional[str] = None,
         input_directory: Optional[str] = None,
-        repeat = 1,
+        repeat=1,
         p: Optional[int] = None,
         q: Optional[int] = None,
         number_edge_types: int,
-        directed: bool=False,
+        directed: bool = False,
         e_step: int,
         em_iteration: int,
 ) -> None:
@@ -154,61 +168,61 @@ def run_edge2vec_graph(
     edge_path = data_paths.edge_data_path
     data_edge2vec_path = data_paths.data_edge2vec_path
 
-    prepare_edge2vec(edge_path,data_edge2vec_path)
-    graph = read_graph(data_edge2vec_path,)
+    #prepare_edge2vec(edge_path, data_edge2vec_path)
+    graph = read_graph(data_edge2vec_path)
     if repeat:
         data_paths = get_data_paths(directory=input_directory)
-        dir_number =0
+        dir_number = 0
         for name in os.listdir(output_directory):
-            path= os.path.join(output_directory,name)
+            path = os.path.join(output_directory, name)
             if os.path.isdir(path):
-                dir_number +=1
-        for i in range(dir_number+1,repeat+1):
+                dir_number += 1
+        for i in range(dir_number + 1, repeat + 1):
             transition_probabilities_path = os.path.join(output_directory, 'transition_probilities_path')
             if transition_probabilities_path is not None and os.path.exists(transition_probabilities_path):
                 with open(transition_probabilities_path, 'rb') as file:
                     transition_probabilities = pickle.load(file)
                 logger.warning(f'Loaded pre-computed probabilities from {transition_probabilities_path}')
             else:
-                transition_probabilities = calculate_edge_transition_matrix(graph=graph,
-                                                                            number_edge_types=number_edge_types,
-                                                                            directed=directed,
-                                                                            e_step=e_step,
-                                                                            em_iteration=em_iteration,
-                                                                            number_walks =num_walks,
-                                                                            walk_length =walk_length,
-                                                                            p=p,
-                                                                            q=q
-                                                                            )
+                transition_probabilities = calculate_edge_transition_matrix(
+                    graph=graph,
+                    number_edge_types=number_edge_types,
+                    directed=directed,
+                    e_step=e_step,
+                    em_iteration=em_iteration,
+                    number_walks=num_walks,
+                    walk_length=walk_length,
+                    p=p,
+                    q=q
+                )
 
             if transition_probabilities_path is not None:
-                    logger.warning(f'Dumping pre-computed probabilities to {transition_probabilities_path}')
-                    with open(transition_probabilities_path, 'wb') as file:
-                        pickle.dump(transition_probabilities, file)
-            sub_output_directory = os.path.join(output_directory,str(i))
+                logger.warning(f'Dumping pre-computed probabilities to {transition_probabilities_path}')
+                with open(transition_probabilities_path, 'wb') as file:
+                    pickle.dump(transition_probabilities, file)
+            sub_output_directory = os.path.join(output_directory, str(i))
             os.makedirs(sub_output_directory)
-            if not permutation_number:
-                    graph = create_himmelstein_graph(data_paths.node_data_path, data_paths.edge_data_path)
-            elif permutation_number==1:
-                    graph = convert(data_paths.permutation_paths[permutation_number-1],permutation_number)
-            model = train(transition_matrix=transition_probabilities,
-                          graph=graph,
-                          number_walks=num_walks,
-                          walk_length=walk_length,
-                          p=p,
-                          q=q,
-                          size=dimensions,
-                          window=window)
+
+            model = train(
+                transition_matrix=transition_probabilities,
+                graph=graph,
+                number_walks=num_walks,
+                walk_length=walk_length,
+                p=p,
+                q=q,
+                size=dimensions,
+                window=window,
+            )
             model.save(os.path.join(sub_output_directory, 'word2vec_model.pickle'))
             embedder_function = EMBEDDERS[embedder]
             train_list, train_labels = train_pairs(data_paths.transformed_features_path)
             #  TODO why build multiple embedders separately and not single one then split vectors after the fact?
             train_vectors = embedder_function(model, train_list)
             disease_modifying, clinical_trials, drug_central, symptomatic = test_pairs(
-            validation_path=data_paths.validate_data_path,
-            symptomatic_path=data_paths.symptomatic_data_path,
-            train_path=data_paths.transformed_features_path,
-             )
+                validation_path=data_paths.validate_data_path,
+                symptomatic_path=data_paths.symptomatic_data_path,
+                train_path=data_paths.transformed_features_path,
+            )
             test_dm_vectors = embedder_function(model, disease_modifying[0])
             test_dm_labels = disease_modifying[1]
             test_ct_vectors = embedder_function(model, clinical_trials[0])
@@ -218,18 +232,18 @@ def run_edge2vec_graph(
             test_sy_vectors = embedder_function(model, symptomatic[0])
             test_sy_labels = symptomatic[1]
             _train_evaluate_generate_artifacts(
-                    sub_output_directory,
-                    train_vectors,
-                    train_labels,
-                    test_dm_vectors,
-                    test_dm_labels,
-                    test_ct_vectors,
-                    test_ct_labels,
-                    test_dc_vectors,
-                    test_dc_labels,
-                    test_sy_vectors,
-                    test_sy_labels,
-                    )
+                sub_output_directory,
+                train_vectors,
+                train_labels,
+                test_dm_vectors,
+                test_dm_labels,
+                test_ct_vectors,
+                test_ct_labels,
+                test_dc_vectors,
+                test_dc_labels,
+                test_sy_vectors,
+                test_sy_labels,
+            )
 
 
 def run_node2vec_subgraph(
@@ -415,22 +429,22 @@ def _train_evaluate_generate_artifacts(
             "Disease Modifying": {
                 "ROC": dm_roc,
                 'Prediction Probability': dm_yp,
-                'Predicted Label':dm_pre
+                'Predicted Label': dm_pre
             },
             'Clinical Trial': {
                 'ROC': ct_roc,
                 'Prediction Probability': ct_yp,
-                'Predicted Label':ct_pre
+                'Predicted Label': ct_pre
             },
             'Drug Central': {
                 'ROC': dc_roc,
                 'Prediction Probability': dc_yp,
-                'Predicted Label':dc_pre
+                'Predicted Label': dc_pre
             },
             'Symptomatic': {
                 'ROC': sy_roc,
                 'Prediction Probability': sy_yp,
-                'Predicted Label':sy_pre
+                'Predicted Label': sy_pre
             },
 
         }
