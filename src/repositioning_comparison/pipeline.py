@@ -168,7 +168,7 @@ def run_edge2vec_graph(
     edge_path = data_paths.edge_data_path
     data_edge2vec_path = data_paths.data_edge2vec_path
 
-    #prepare_edge2vec(edge_path, data_edge2vec_path)
+    prepare_edge2vec(edge_path, data_edge2vec_path)
     graph = read_graph(data_edge2vec_path)
     if repeat:
         data_paths = get_data_paths(directory=input_directory)
