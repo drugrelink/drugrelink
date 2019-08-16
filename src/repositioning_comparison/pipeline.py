@@ -163,6 +163,7 @@ def run_edge2vec_graph(
         directed: bool = False,
         e_step: int,
         em_iteration: int,
+        max_count:int
 ) -> None:
     data_paths = get_data_paths(directory=input_directory)
     edge_path = data_paths.edge_data_path
@@ -193,7 +194,9 @@ def run_edge2vec_graph(
                     number_walks=num_walks,
                     walk_length=walk_length,
                     p=p,
-                    q=q
+                    q=q,
+                    max_count=max_count
+
                 )
 
             if transition_probabilities_path is not None:
