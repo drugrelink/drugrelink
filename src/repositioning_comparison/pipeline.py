@@ -6,6 +6,7 @@ import json
 import logging
 import os
 import pickle
+import networkx as nx
 from datetime import datetime
 from typing import Optional
 
@@ -23,6 +24,7 @@ from .pairs import test_pairs, train_pairs
 from .permutation_convert import convert
 from .subgraph import generate_subgraph
 from .train import train_logistic_regression, validate
+from .subgraph_edge2vec import subgraph_edge2vec
 
 logger = logging.getLogger(__name__)
 
@@ -171,6 +173,7 @@ def run_edge2vec_graph(
 
     prepare_edge2vec(edge_path, data_edge2vec_path)
     graph = read_graph(data_edge2vec_path)
+
     if repeat:
         data_paths = get_data_paths(directory=input_directory)
         dir_number = 0
@@ -459,3 +462,149 @@ def _train_evaluate_generate_artifacts(
             sort_keys=True,
             indent=2,
         )
+
+
+def run_edge2vec_subgraph(
+        *,
+        dimensions: int,
+        walk_length: int,
+        num_walks: int,
+        window: int,
+        embedder: str = "hadamard",
+        permutation_number=None,
+        output_directory: Optional[str] = None,
+        input_directory: Optional[str] = None,
+        repeat=1,
+        p: Optional[int] = None,
+        q: Optional[int] = None,
+        number_edge_types: int,
+        directed: bool = False,
+        e_step: int,
+        em_iteration: int,
+        max_count:int,
+        n_train_positive: int = 5,
+        n_train_negative: int = 15,
+) -> None:
+    if output_directory is None:
+        output_directory = os.path.join(RESULTS_DIRECTORY, datetime.now().strftime(f'edge2vec_{embedder}_%Y%m%d_%H%M'))
+        os.makedirs(output_directory, exist_ok=True)
+
+    # TODO re-write metadata export
+
+    # Define some output paths
+    data_paths = get_data_paths(directory=input_directory)
+    edge_path = data_paths.edge_data_path
+    data_edge2vec_path = data_paths.data_edge2vec_path
+
+    prepare_edge2vec(edge_path, data_edge2vec_path)
+    transition_probabilities_path = os.path.join(output_directory, 'transition_probabilities.json')
+
+    subgraph_path = os.path.join(output_directory, 'subgraph.pickle')
+    positive_list_path = os.path.join(output_directory, 'positive_list.pickle')
+    positive_labels_path = os.path.join(output_directory, 'positive_labels.pickle')
+    negative_list_path = os.path.join(output_directory, 'negative_list.pickle')
+    negative_labels_path = os.path.join(output_directory, 'negative_labels.pickle')
+
+    if os.path.exists(subgraph_path):
+        logger.info('loading pickled subgraph info')
+        with open(subgraph_path, 'rb') as file:
+            subgraph = pickle.load(file)
+        with open(positive_list_path, 'rb') as file:
+            positive_list = pickle.load(file)
+        with open(positive_labels_path, 'rb') as file:
+            positive_labels = pickle.load(file)
+        with open(negative_list_path, 'rb') as file:
+            negative_list = pickle.load(file)
+        with open(negative_labels_path, 'rb') as file:
+            negative_labels = pickle.load(file)
+        logger.info('loaded pickled subgraph info')
+
+    else:
+        click.echo('creating graph')
+        graph = read_graph(data_edge2vec_path)
+
+        click.echo('creating sub-graph')
+        (subgraph,
+         positive_list,
+         positive_labels,
+         negative_list,
+         negative_labels) = generate_subgraph(
+            data_paths.transformed_features_path,
+            graph,
+            max_simple_path_length=3,
+            n_positive=10,  # TODO calculate positive and negative number based on n_train_positive
+            n_negative=20,
+        )
+
+        logger.info('dumping pickled subgraph info')
+        with open(subgraph_path, 'wb') as file:
+            pickle.dump(subgraph, file, protocol=-1)
+        with open(positive_list_path, 'wb') as file:
+            pickle.dump(positive_list, file, protocol=-1)
+        with open(positive_labels_path, 'wb') as file:
+            pickle.dump(positive_labels, file, protocol=-1)
+        with open(negative_list_path, 'wb') as file:
+            pickle.dump(negative_list, file, protocol=-1)
+        with open(negative_labels_path, 'wb') as file:
+            pickle.dump(negative_labels, file, protocol=-1)
+
+    click.echo('fitting node2vec/word2vec')
+    if transition_probabilities_path is not None and os.path.exists(transition_probabilities_path):
+            with open(transition_probabilities_path, 'rb') as file:
+                    transition_probabilities = pickle.load(file)
+            logger.warning(f'Loaded pre-computed probabilities from {transition_probabilities_path}')
+    else:
+            transition_probabilities = calculate_edge_transition_matrix(
+                    graph=subgraph,
+                    number_edge_types=number_edge_types,
+                    directed=directed,
+                    e_step=e_step,
+                    em_iteration=em_iteration,
+                    number_walks=num_walks,
+                    walk_length=walk_length,
+                    p=p,
+                    q=q,
+                    max_count=max_count
+
+                )
+
+    if transition_probabilities_path is not None:
+            logger.warning(f'Dumping pre-computed probabilities to {transition_probabilities_path}')
+            with open(transition_probabilities_path, 'wb') as file:
+                    pickle.dump(transition_probabilities, file)
+
+
+    model = train(
+                transition_matrix=transition_probabilities,
+                graph=subgraph,
+                number_walks=num_walks,
+                walk_length=walk_length,
+                p=p,
+                q=q,
+                size=dimensions,
+                window=window,
+            )
+
+
+    click.echo('saving word2vec')
+    model.save(os.path.join(output_directory, 'word2vec_model.pickle'))
+
+    click.echo('generating vectors')
+    embedder_function = EMBEDDERS[embedder]
+    positive_vectors = embedder_function(model, positive_list)
+    negative_vectors = embedder_function(model, negative_list)
+
+    train_vectors = positive_vectors[:n_train_positive] + negative_vectors[:n_train_negative]
+    train_labels = positive_labels[:n_train_positive] + negative_labels[:n_train_negative]
+    test_vectors = positive_vectors[n_train_positive:] + negative_vectors[n_train_negative:]
+    test_labels = positive_labels[n_train_positive:] + negative_labels[n_train_negative:]
+
+    _train_evaluate_generate_artifacts(
+        output_directory,
+        train_vectors,
+        train_labels,
+        test_vectors,
+        test_labels,
+    )
+
+

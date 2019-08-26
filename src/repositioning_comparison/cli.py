@@ -9,6 +9,7 @@ import sys
 import click
 
 from .pipeline import run_node2vec_graph, run_node2vec_subgraph, run_edge2vec_graph
+from .download import get_data_paths
 
 __all__ = [
     'main',
@@ -27,11 +28,9 @@ def main(config: str, debug: bool):
 
     # Interpret as JSON file
     config = json.load(config)
-
     # Get high level configuration
-    method = config.pop('method', 'node2vec')  # by default, use node2vec
-    graph_type = config.pop('graph_type', 'graph')  # by default, do the whole graph
-
+    method = config.pop('method','node2vec') # by default, use node2vec
+    graph_type = config.pop('graph_type','graph')# by default, do the whole graph
     # Choose the appropriate function then pass the rest of the configuration there
     # using the splat operator
     if method == 'node2vec':
@@ -40,6 +39,7 @@ def main(config: str, debug: bool):
 
         elif graph_type == 'subgraph':
             return run_node2vec_subgraph(**config)
+
         elif graph_type == 'permutation':
             return run_node2vec_graph(**config)
 
@@ -50,9 +50,10 @@ def main(config: str, debug: bool):
 
 
     elif method == 'edge2vec':
-        if graph_type == 'graph' or 'permutation':
+        if graph_type == 'graph':
             return run_edge2vec_graph(**config)
-
+        elif graph_type == 'subgraph':
+            return run_edge2vec_subgrah(**config)
 
         else:
             click.echo(f'Unsupported graph_type={graph_type}')
