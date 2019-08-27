@@ -28,7 +28,7 @@ def main(config: str, debug: bool):
 
     # Interpret as JSON file
     config = {"method":"edge2vec",
-	"graph_type":"subgraph",
+	"graph_type":"graph",
 	"dimensions":48,
 	"walk_length":5,
 	"num_walks":1,
@@ -38,7 +38,9 @@ def main(config: str, debug: bool):
 	"q":1,
 	"e_step":1,
 	"em_iteration":1,
-    "max_count":10}
+    "max_count":10,
+    "number_edge_types":24
+    }
     # Get high level configuration
     method = config.pop('method','node2vec') # by default, use node2vec
     graph_type = config.pop('graph_type','graph')# by default, do the whole graph

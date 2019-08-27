@@ -170,8 +170,10 @@ def run_edge2vec_graph(
     data_paths = get_data_paths(directory=input_directory)
     edge_path = data_paths.edge_data_path
     data_edge2vec_path = data_paths.data_edge2vec_path
-
-    prepare_edge2vec(edge_path, data_edge2vec_path)
+    if os.path.exist(data_edge2vec_path):
+        pass
+    else:
+        prepare_edge2vec(edge_path, data_edge2vec_path)
     graph = read_graph(data_edge2vec_path)
 
     if repeat:
@@ -483,6 +485,7 @@ def run_edge2vec_subgraph(
         max_count:int,
         n_train_positive: int = 5,
         n_train_negative: int = 15,
+
 ) -> None:
     if output_directory is None:
         output_directory = os.path.join(RESULTS_DIRECTORY, datetime.now().strftime(f'edge2vec_{embedder}_%Y%m%d_%H%M'))
@@ -568,7 +571,7 @@ def run_edge2vec_subgraph(
                     p=p,
                     q=q,
                     max_count=max_count,
-                    edge_types= edge_types
+
 
                 )
 
