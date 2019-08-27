@@ -170,7 +170,7 @@ def run_edge2vec_graph(
     data_paths = get_data_paths(directory=input_directory)
     edge_path = data_paths.edge_data_path
     data_edge2vec_path = data_paths.data_edge2vec_path
-    if os.path.exist(data_edge2vec_path):
+    if os.path.exists(data_edge2vec_path):
         pass
     else:
         prepare_edge2vec(edge_path, data_edge2vec_path)
