@@ -24,7 +24,7 @@ from .pairs import test_pairs, train_pairs
 from .permutation_convert import convert
 from .subgraph import generate_subgraph
 from .train import train_logistic_regression, validate
-from .subgraph_edge2vec import subgraph_edge2vec
+from .count_edge_types import count
 
 logger = logging.getLogger(__name__)
 
@@ -477,7 +477,6 @@ def run_edge2vec_subgraph(
         repeat=1,
         p: Optional[int] = None,
         q: Optional[int] = None,
-        number_edge_types: int,
         directed: bool = False,
         e_step: int,
         em_iteration: int,
@@ -495,8 +494,10 @@ def run_edge2vec_subgraph(
     data_paths = get_data_paths(directory=input_directory)
     edge_path = data_paths.edge_data_path
     data_edge2vec_path = data_paths.data_edge2vec_path
-
-    prepare_edge2vec(edge_path, data_edge2vec_path)
+    if os.path.exists(data_edge2vec_path):
+        pass
+    else:
+        prepare_edge2vec(edge_path, data_edge2vec_path)
     transition_probabilities_path = os.path.join(output_directory, 'transition_probabilities.json')
 
     subgraph_path = os.path.join(output_directory, 'subgraph.pickle')
@@ -536,6 +537,7 @@ def run_edge2vec_subgraph(
             n_negative=20,
         )
 
+
         logger.info('dumping pickled subgraph info')
         with open(subgraph_path, 'wb') as file:
             pickle.dump(subgraph, file, protocol=-1)
@@ -547,8 +549,9 @@ def run_edge2vec_subgraph(
             pickle.dump(negative_list, file, protocol=-1)
         with open(negative_labels_path, 'wb') as file:
             pickle.dump(negative_labels, file, protocol=-1)
-
-    click.echo('fitting node2vec/word2vec')
+    edge_types=count(subgraph)
+    number_edge_types = len(count(subgraph))
+    click.echo('fitting edge2vec/word2vec')
     if transition_probabilities_path is not None and os.path.exists(transition_probabilities_path):
             with open(transition_probabilities_path, 'rb') as file:
                     transition_probabilities = pickle.load(file)
@@ -564,7 +567,8 @@ def run_edge2vec_subgraph(
                     walk_length=walk_length,
                     p=p,
                     q=q,
-                    max_count=max_count
+                    max_count=max_count,
+                    edge_types= edge_types
 
                 )
 
