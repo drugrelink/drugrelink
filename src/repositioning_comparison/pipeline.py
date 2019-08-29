@@ -161,7 +161,6 @@ def run_edge2vec_graph(
         repeat=1,
         p: Optional[int] = None,
         q: Optional[int] = None,
-        number_edge_types: int,
         directed: bool = False,
         e_step: int,
         em_iteration: int,
@@ -192,15 +191,14 @@ def run_edge2vec_graph(
             else:
                 transition_probabilities = calculate_edge_transition_matrix(
                     graph=graph,
-                    number_edge_types=number_edge_types,
                     directed=directed,
                     e_step=e_step,
                     em_iteration=em_iteration,
-                    number_walks=num_walks,
+                    walk_epochs=num_walks,
                     walk_length=walk_length,
                     p=p,
                     q=q,
-                    max_count=max_count
+                    walk_sample_size=max_count
 
                 )
 
