@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 
 @click.command()
-@click.argument('config')
+@click.argument('config',type=click.File())
 @click.option('-v', '--debug', is_flag=True)
 def main(config: str, debug: bool):
     """This cli runs the ComparisonNRL."""
@@ -27,20 +27,7 @@ def main(config: str, debug: bool):
     logger.setLevel(logging.DEBUG if debug else logging.INFO)
 
     # Interpret as JSON file
-    config = {"method":"edge2vec",
-	"graph_type":"graph",
-	"dimensions":48,
-	"walk_length":5,
-	"num_walks":1,
-	"window":3,
-	"output_directory":"/Users/work/Desktop/edge2vec_try",
-	"p":1,
-	"q":1,
-	"e_step":1,
-	"em_iteration":1,
-    "max_count":10,
-    "number_edge_types":24
-    }
+    config = json.load(config)
     # Get high level configuration
     method = config.pop('method','node2vec') # by default, use node2vec
     graph_type = config.pop('graph_type','graph')# by default, do the whole graph
