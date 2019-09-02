@@ -6,6 +6,7 @@ import json
 import logging
 import os
 import pickle
+import datetime
 import networkx as nx
 from datetime import datetime
 from typing import Optional
@@ -218,8 +219,10 @@ def run_edge2vec_graph(
                 q=q,
                 size=dimensions,
                 window=window,
+                output_directory=output_directory
             )
             model.save(os.path.join(sub_output_directory, 'word2vec_model.pickle'))
+            model.wv.save_word2vec_format(os.path.join(sub_output_directory,'word2vec_wv'))
             embedder_function = EMBEDDERS[embedder]
             train_list, train_labels = train_pairs(data_paths.transformed_features_path)
             #  TODO why build multiple embedders separately and not single one then split vectors after the fact?
@@ -250,6 +253,7 @@ def run_edge2vec_graph(
                 test_sy_vectors,
                 test_sy_labels,
             )
+        logger.warning(datetime.datetime.now())
 
 
 def run_node2vec_subgraph(
@@ -352,6 +356,7 @@ def run_node2vec_subgraph(
         test_vectors,
         test_labels,
     )
+    logger.warning(datetime.datetime.now())
 
 
 def _train_evaluate_generate_artifacts(
@@ -403,12 +408,12 @@ def _train_evaluate_generate_artifacts(
             sort_keys=True,
         )
 
-    click.echo('training logistic regression classifier')
+    logger.warning('training logistic regression classifier')
     logistic_regression = train_logistic_regression(train_vectors, train_labels)
     with open(os.path.join(output_directory, 'logistic_regression_clf.joblib'), 'wb') as file:
         joblib.dump(logistic_regression, file)
 
-    click.echo('validating logistic regression classifier')
+    logger.warning('validating logistic regression classifier')
     if not test_ct_vectors:
 
         roc, y_pro = validate(logistic_regression, test_dm_vectors, test_dm_labels)
@@ -462,6 +467,7 @@ def _train_evaluate_generate_artifacts(
             sort_keys=True,
             indent=2,
         )
+
 
 
 def run_edge2vec_subgraph(
