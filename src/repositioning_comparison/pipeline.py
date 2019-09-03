@@ -218,8 +218,7 @@ def run_edge2vec_graph(
                 p=p,
                 q=q,
                 size=dimensions,
-                window=window,
-                output_directory=output_directory
+                window=window
             )
             model.save(os.path.join(sub_output_directory, 'word2vec_model.pickle'))
             model.wv.save_word2vec_format(os.path.join(sub_output_directory,'word2vec_wv'))
