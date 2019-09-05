@@ -6,7 +6,6 @@ import json
 import logging
 import os
 import pickle
-import datetime
 import numpy as np
 from datetime import datetime
 from typing import Optional
@@ -252,7 +251,7 @@ def run_edge2vec_graph(
                 test_sy_vectors,
                 test_sy_labels,
             )
-        logger.warning(datetime.datetime.now())
+        logger.warning(datetime.now())
 
 
 def run_node2vec_subgraph(
