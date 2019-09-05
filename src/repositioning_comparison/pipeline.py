@@ -7,7 +7,7 @@ import logging
 import os
 import pickle
 import datetime
-import networkx as nx
+import numpy as np
 from datetime import datetime
 from typing import Optional
 
@@ -184,10 +184,10 @@ def run_edge2vec_graph(
             if os.path.isdir(path):
                 dir_number += 1
         for i in range(dir_number + 1, repeat + 1):
-            transition_probabilities_path = os.path.join(output_directory, 'transition_probilities_path')
+            transition_probabilities_path = os.path.join(output_directory, 'transition_probabilities.csv')
             if transition_probabilities_path is not None and os.path.exists(transition_probabilities_path):
                 with open(transition_probabilities_path, 'rb') as file:
-                    transition_probabilities = pickle.load(file)
+                    transition_probabilities=np.load(file)
                 logger.warning(f'Loaded pre-computed probabilities from {transition_probabilities_path}')
             else:
                 transition_probabilities = calculate_edge_transition_matrix(
@@ -206,7 +206,7 @@ def run_edge2vec_graph(
             if transition_probabilities_path is not None:
                 logger.warning(f'Dumping pre-computed probabilities to {transition_probabilities_path}')
                 with open(transition_probabilities_path, 'wb') as file:
-                    pickle.dump(transition_probabilities, file)
+                    np.save(file,transition_probabilities)
             sub_output_directory = os.path.join(output_directory, str(i))
             os.makedirs(sub_output_directory)
 
