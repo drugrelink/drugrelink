@@ -48,6 +48,7 @@ class DataPaths:
     permutation_paths: List[str]
     data_edge2vec_path: str
 
+
 def get_data_paths(directory: Optional[str] = None) -> DataPaths:
     """Ensure Himmelstein's data files are downloaded."""
     if directory is None:
@@ -99,5 +100,5 @@ def get_data_paths(directory: Optional[str] = None) -> DataPaths:
         validate_data_path=validate_data_path,
         symptomatic_data_path=symptomatic_data_path,
         permutation_paths=permutation_paths,
-        data_edge2vec_path = data_edge2vec_path
+        data_edge2vec_path=data_edge2vec_path,
     )

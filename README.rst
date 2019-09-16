@@ -1,15 +1,15 @@
 master_thesis
 =============
-This package gets the master theis of Lingling Xu
+This package gets the master thesis of Lingling Xu
 
 Installation
 ------------
-Install from `GitHub <https://github.com/lingling93/comparison>`_ with:
+Install from `GitHub <https://github.com/drugrelink/drugrelink>`_ with:
 
 .. code-block:: sh
 
-    $ git clone https://github.com/lingling93/comparison.git repositioning-comparison
-    $ cd repositioning-comparison
+    $ git clone https://github.com/drugrelink/drugrelink.git
+    $ cd drugrelink
     $ pip install -e .
 
 CLI Usage
@@ -18,4 +18,4 @@ Run on a subgraph from Himmelstein with:
 
 .. code-block:: sh
 
-    $ repositioning-comparion subgraph
+    $ drugrelink subgraph
