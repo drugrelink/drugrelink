@@ -68,6 +68,7 @@ def main(config: str, debug: bool):
        return retrain(**config)
 
     else config['predict']:
+        return predict(**config)
 
 
 

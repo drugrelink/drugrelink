@@ -634,12 +634,34 @@ def retrain(
 def predict(
         *
         method:str,
+        compound_IDs:[str],
+        disease_IDs:[str],
         lg_path_list:str,
-        output_directory:str = None,
+        output_directory:str,
 ):
+    results = {}
+    for i in range(0,10):
+        model_path = os.path.join(RESOURCES_DIRECTORY,'predictive_model',method,str(i),'word2vec_model.pickle')
+        embedder_function = EMBEDDERS['hardamard']
+        model = pickle.load(open(model_path,'rb'))
 
-    for path in lg_path_list:
-        if path is not None and os.path.exisits(lg_path_list):
+        for disease_id in disease_IDs:
+            for compound_id in compound_IDs:
+                dc = [f'Disease::{disease_id}',f'Compound::{compound_id}']
+                edge_embedding = embedder_function(model,dc)
+                lg=joblib.load(lg_path_list[i])
+                pre = lg.preict(edge_embedding)
+                if edge_embedding not in results:
+                    results[f'Disease::{disease_id}, Compound::{compound_id}'] = [pre]
+                else:
+                    results[f'Disease::{disease_id}, Compound::{compound_id}'].append(pre)
+    with open(os.path.join(output_directory, 'results.json')) as file:
+        json.dump(results,file)
+
+    return results
+
+
+
 
 
 
