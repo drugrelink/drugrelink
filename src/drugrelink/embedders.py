@@ -18,9 +18,9 @@ __all__ = [
 
 
 def embed(
-        word2vec_model: gensim.models.Word2Vec,
-        edges: Iterable[Tuple[str, str]],
-        edge_embedder_cls: Type[node2vec.edges.EdgeEmbedder],
+    word2vec_model: gensim.models.Word2Vec,
+    edges: Iterable[Tuple[str, str]],
+    edge_embedder_cls: Type[node2vec.edges.EdgeEmbedder],
 ) -> List[List[float]]:
     """
 

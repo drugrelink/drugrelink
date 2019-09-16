@@ -8,8 +8,7 @@ import sys
 
 import click
 
-from .pipeline import run_node2vec_graph, run_node2vec_subgraph, run_edge2vec_graph,run_edge2vec_subgraph
-from .download import get_data_paths
+from .pipeline import run_edge2vec_graph, run_edge2vec_subgraph, run_node2vec_graph, run_node2vec_subgraph
 
 __all__ = [
     'main',
@@ -19,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 @click.command()
-@click.argument('config',type=click.File())
+@click.argument('config', type=click.File())
 @click.option('-v', '--debug', is_flag=True)
 def main(config: str, debug: bool):
     """This cli runs the ComparisonNRL."""
@@ -29,8 +28,8 @@ def main(config: str, debug: bool):
     # Interpret as JSON file
     config = json.load(config)
     # Get high level configuration
-    method = config.pop('method','node2vec') # by default, use node2vec
-    graph_type = config.pop('graph_type','graph')# by default, do the whole graph
+    method = config.pop('method', 'node2vec')  # by default, use node2vec
+    graph_type = config.pop('graph_type', 'graph')  # by default, do the whole graph
     # Choose the appropriate function then pass the rest of the configuration there
     # using the splat operator
     if method == 'node2vec':
@@ -62,6 +61,7 @@ def main(config: str, debug: bool):
     else:
         click.echo(f'Unsupported method={method}')
         return sys.exit(1)
+
 
 if __name__ == '__main__':
     main()

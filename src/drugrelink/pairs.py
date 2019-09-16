@@ -18,10 +18,10 @@ def train_pairs(path):
 
 
 def test_pairs(
-        *,
-        validation_path,
-        train_path,
-        symptomatic_path,
+    *,
+    validation_path,
+    train_path,
+    symptomatic_path,
 ):
     """"""
     df_validate = pd.read_csv(validation_path, sep='\t')

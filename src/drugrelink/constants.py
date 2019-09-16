@@ -16,4 +16,4 @@ GRAPH_TYPES = [
 ]
 HERE = os.path.abspath(os.path.dirname(__file__))
 DEFAULT_DIRECTORY = os.path.abspath(os.path.join(HERE, os.pardir, os.pardir, 'results'))
-RESULTS_DIRECTORY = os.environ.get('REPOSITIONING_COMPARISON_DIRECTORY', DEFAULT_DIRECTORY)
+RESOURCES_DIRECTORY = os.environ.get('DRUGRELINK_RESOURCES_DIRECTORY', DEFAULT_DIRECTORY)

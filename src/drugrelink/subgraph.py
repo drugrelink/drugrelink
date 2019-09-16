@@ -17,12 +17,12 @@ logger = logging.getLogger(__name__)
 
 
 def generate_subgraph(
-        path,
-        graph,
-        *,
-        n_positive: int,
-        n_negative: int,
-        max_simple_path_length: int = 3,
+    path,
+    graph,
+    *,
+    n_positive: int,
+    n_negative: int,
+    max_simple_path_length: int = 3,
 ):
     """
 

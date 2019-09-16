@@ -20,4 +20,4 @@ def validate(logistic_regression: logistic.LogitNet, x, y) -> float:
         y_score.append(i[1])
     roc = roc_auc_score(y, y_score)
 
-    return roc, scores,label
+    return roc, scores, label

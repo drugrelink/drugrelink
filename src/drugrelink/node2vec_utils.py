@@ -19,7 +19,8 @@ logger = logging.getLogger(__name__)
 class _SubNode2Vec(Node2Vec):
     """A subclass of Node2Vec that gives a bit more logging."""
 
-    def __init__(self, *args, transition_probabilities_path: Optional[str] = None, window:Optional[int] = None,**kwargs) -> None:
+    def __init__(self, *args, transition_probabilities_path: Optional[str] = None, window: Optional[int] = None,
+                 **kwargs) -> None:
         self.transition_probabilities_path = transition_probabilities_path
         self.window = window
         super().__init__(*args, **kwargs)
@@ -61,15 +62,15 @@ class _SubNode2Vec(Node2Vec):
 
 
 def fit_node2vec(
-        graph: networkx.Graph,
-        transition_probabilities_path: Optional[str] = None,
-        workers: int = 1,
-        walk_length=30,
-        dimensions=64,
-        num_walks=10,
-        window=10,
-        p=1,
-        q=1
+    graph: networkx.Graph,
+    transition_probabilities_path: Optional[str] = None,
+    workers: int = 1,
+    walk_length=30,
+    dimensions=64,
+    num_walks=10,
+    window=10,
+    p=1,
+    q=1
 
 ) -> gensim.models.Word2Vec:
     """

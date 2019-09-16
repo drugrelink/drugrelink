@@ -6,15 +6,16 @@ import json
 import logging
 import os
 import pickle
-import numpy as np
 from datetime import datetime
 from typing import Optional
 
 import click
 import joblib
-from edge2vec import calculate_edge_transition_matrix, train, read_graph
+import numpy as np
+from edge2vec import calculate_edge_transition_matrix, read_graph, train
 
-from .constants import RESULTS_DIRECTORY
+from .constants import RESOURCES_DIRECTORY
+from .count_edge_types import count
 from .create_graph import create_himmelstein_graph
 from .download import get_data_paths
 from .embedders import EMBEDDERS
@@ -24,24 +25,23 @@ from .pairs import test_pairs, train_pairs
 from .permutation_convert import convert
 from .subgraph import generate_subgraph
 from .train import train_logistic_regression, validate
-from .count_edge_types import count
 
 logger = logging.getLogger(__name__)
 
 
 def run_node2vec_graph(
-        *,
-        dimensions: int,
-        walk_length: int,
-        num_walks: int,
-        window: int,
-        embedder: str = "hadamard",
-        permutation_number=None,
-        output_directory: Optional[str] = None,
-        input_directory: Optional[str] = None,
-        repeat=1,
-        p: Optional[int] = None,
-        q: Optional[int] = None
+    *,
+    dimensions: int,
+    walk_length: int,
+    num_walks: int,
+    window: int,
+    embedder: str = "hadamard",
+    permutation_number=None,
+    output_directory: Optional[str] = None,
+    input_directory: Optional[str] = None,
+    repeat=1,
+    p: Optional[int] = None,
+    q: Optional[int] = None
 
 ) -> None:
     """
@@ -60,7 +60,7 @@ def run_node2vec_graph(
     :return: None
     """
     if output_directory is None:
-        output_directory = os.path.join(RESULTS_DIRECTORY, datetime.now().strftime(f'node2vec_{embedder}_%Y%m%d_%H%M'))
+        output_directory = os.path.join(RESOURCES_DIRECTORY, datetime.now().strftime(f'node2vec_{embedder}_%Y%m%d_%H%M'))
         os.makedirs(output_directory, exist_ok=True)
 
     with open(os.path.join(output_directory, 'metadata.json'), 'w') as file:
@@ -75,8 +75,7 @@ def run_node2vec_graph(
             'window': window,
             'p': p,
             'q': q,
-            'repeat': repeat
-
+            'repeat': repeat,
         },
             file,
             indent=2,
@@ -149,22 +148,22 @@ def run_node2vec_graph(
 
 
 def run_edge2vec_graph(
-        *,
-        dimensions: int,
-        walk_length: int,
-        num_walks: int,
-        window: int,
-        embedder: str = "hadamard",
-        permutation_number=None,
-        output_directory: Optional[str] = None,
-        input_directory: Optional[str] = None,
-        repeat=1,
-        p: Optional[int] = None,
-        q: Optional[int] = None,
-        directed: bool = False,
-        e_step: int,
-        em_iteration: int,
-        max_count:int
+    *,
+    dimensions: int,
+    walk_length: int,
+    num_walks: int,
+    window: int,
+    embedder: str = "hadamard",
+    permutation_number=None,
+    output_directory: Optional[str] = None,
+    input_directory: Optional[str] = None,
+    repeat=1,
+    p: Optional[int] = None,
+    q: Optional[int] = None,
+    directed: bool = False,
+    e_step: int,
+    em_iteration: int,
+    max_count: int
 ) -> None:
     data_paths = get_data_paths(directory=input_directory)
     edge_path = data_paths.edge_data_path
@@ -186,7 +185,7 @@ def run_edge2vec_graph(
             transition_probabilities_path = os.path.join(output_directory, 'transition_probabilities.csv')
             if transition_probabilities_path is not None and os.path.exists(transition_probabilities_path):
                 with open(transition_probabilities_path, 'rb') as file:
-                    transition_probabilities=np.load(file)
+                    transition_probabilities = np.load(file)
                 logger.warning(f'Loaded pre-computed probabilities from {transition_probabilities_path}')
             else:
                 transition_probabilities = calculate_edge_transition_matrix(
@@ -205,7 +204,7 @@ def run_edge2vec_graph(
             if transition_probabilities_path is not None:
                 logger.warning(f'Dumping pre-computed probabilities to {transition_probabilities_path}')
                 with open(transition_probabilities_path, 'wb') as file:
-                    np.save(file,transition_probabilities)
+                    np.save(file, transition_probabilities)
             sub_output_directory = os.path.join(output_directory, str(i))
             os.makedirs(sub_output_directory)
 
@@ -220,7 +219,7 @@ def run_edge2vec_graph(
                 window=window
             )
             model.save(os.path.join(sub_output_directory, 'word2vec_model.pickle'))
-            model.wv.save_word2vec_format(os.path.join(sub_output_directory,'word2vec_wv'))
+            model.wv.save_word2vec_format(os.path.join(sub_output_directory, 'word2vec_wv'))
             embedder_function = EMBEDDERS[embedder]
             train_list, train_labels = train_pairs(data_paths.transformed_features_path)
             #  TODO why build multiple embedders separately and not single one then split vectors after the fact?
@@ -255,19 +254,19 @@ def run_edge2vec_graph(
 
 
 def run_node2vec_subgraph(
-        *,
-        dimensions: int,
-        walk_length: int,
-        num_walks: int,
-        n_train_positive: int = 5,
-        n_train_negative: int = 15,
-        embedder: str = "hadamard",
-        output_directory: Optional[str] = None,
-        input_directory: Optional[str] = None,
+    *,
+    dimensions: int,
+    walk_length: int,
+    num_walks: int,
+    n_train_positive: int = 5,
+    n_train_negative: int = 15,
+    embedder: str = "hadamard",
+    output_directory: Optional[str] = None,
+    input_directory: Optional[str] = None,
 
 ) -> None:
     if output_directory is None:
-        output_directory = os.path.join(RESULTS_DIRECTORY, datetime.now().strftime(f'node2vec_{embedder}_%Y%m%d_%H%M'))
+        output_directory = os.path.join(RESOURCES_DIRECTORY, datetime.now().strftime(f'node2vec_{embedder}_%Y%m%d_%H%M'))
         os.makedirs(output_directory, exist_ok=True)
 
     # TODO re-write metadata export
@@ -301,11 +300,13 @@ def run_node2vec_subgraph(
         graph = create_himmelstein_graph(data_paths.node_data_path, data_paths.edge_data_path)
 
         click.echo('creating sub-graph')
-        (subgraph,
-         positive_list,
-         positive_labels,
-         negative_list,
-         negative_labels) = generate_subgraph(
+        (
+            subgraph,
+            positive_list,
+            positive_labels,
+            negative_list,
+            negative_labels,
+        ) = generate_subgraph(
             data_paths.transformed_features_path,
             graph,
             max_simple_path_length=3,
@@ -354,21 +355,21 @@ def run_node2vec_subgraph(
         test_vectors,
         test_labels,
     )
-    logger.warning(datetime.datetime.now())
+    logger.warning(datetime.now())
 
 
 def _train_evaluate_generate_artifacts(
-        output_directory,
-        train_vectors,
-        train_labels,
-        test_dm_vectors,
-        test_dm_labels,
-        test_ct_vectors=None,
-        test_ct_labels=None,
-        test_dc_vectors=None,
-        test_dc_labels=None,
-        test_sy_vectors=None,
-        test_sy_labels=None,
+    output_directory,
+    train_vectors,
+    train_labels,
+    test_dm_vectors,
+    test_dm_labels,
+    test_ct_vectors=None,
+    test_ct_labels=None,
+    test_dc_vectors=None,
+    test_dc_labels=None,
+    test_sy_vectors=None,
+    test_sy_labels=None,
 ) -> None:
     if not test_ct_vectors:
         test_dict = {
@@ -390,21 +391,14 @@ def _train_evaluate_generate_artifacts(
     with open(os.path.join(output_directory, 'train.json'), 'w') as file:
         json.dump(
             [
-                dict(vector=train_vector, label=train_label)
+                dict(label=train_label, vector=train_vector)
                 for train_vector, train_label in zip(train_vectors, train_labels)
             ],
             file,
-            indent=2,
-            sort_keys=True,
         )
 
     with open(os.path.join(output_directory, 'test.json'), 'w') as file:
-        json.dump(
-            test_dict,
-            file,
-            indent=2,
-            sort_keys=True,
-        )
+        json.dump(test_dict, file)
 
     logger.warning('training logistic regression classifier')
     logistic_regression = train_logistic_regression(train_vectors, train_labels)
@@ -438,59 +432,52 @@ def _train_evaluate_generate_artifacts(
             "Disease Modifying": {
                 "ROC": dm_roc,
                 'Prediction Probability': dm_yp,
-                'Predicted Label': dm_pre
+                'Predicted Label': dm_pre,
             },
             'Clinical Trial': {
                 'ROC': ct_roc,
                 'Prediction Probability': ct_yp,
-                'Predicted Label': ct_pre
+                'Predicted Label': ct_pre,
             },
             'Drug Central': {
                 'ROC': dc_roc,
                 'Prediction Probability': dc_yp,
-                'Predicted Label': dc_pre
+                'Predicted Label': dc_pre,
             },
             'Symptomatic': {
                 'ROC': sy_roc,
                 'Prediction Probability': sy_yp,
-                'Predicted Label': sy_pre
+                'Predicted Label': sy_pre,
             },
-
         }
 
     with open(os.path.join(output_directory, 'validation.json'), 'w') as file:
-        json.dump(
-            roc_dict,
-            file,
-            sort_keys=True,
-            indent=2,
-        )
-
+        json.dump(roc_dict, file)
 
 
 def run_edge2vec_subgraph(
-        *,
-        dimensions: int,
-        walk_length: int,
-        num_walks: int,
-        window: int,
-        embedder: str = "hadamard",
-        permutation_number=None,
-        output_directory: Optional[str] = None,
-        input_directory: Optional[str] = None,
-        repeat=1,
-        p: Optional[int] = None,
-        q: Optional[int] = None,
-        directed: bool = False,
-        e_step: int,
-        em_iteration: int,
-        max_count:int,
-        n_train_positive: int = 5,
-        n_train_negative: int = 15,
+    *,
+    dimensions: int,
+    walk_length: int,
+    num_walks: int,
+    window: int,
+    embedder: str = "hadamard",
+    permutation_number=None,
+    output_directory: Optional[str] = None,
+    input_directory: Optional[str] = None,
+    repeat=1,
+    p: Optional[int] = None,
+    q: Optional[int] = None,
+    directed: bool = False,
+    e_step: int,
+    em_iteration: int,
+    max_count: int,
+    n_train_positive: int = 5,
+    n_train_negative: int = 15,
 
 ) -> None:
     if output_directory is None:
-        output_directory = os.path.join(RESULTS_DIRECTORY, datetime.now().strftime(f'edge2vec_{embedder}_%Y%m%d_%H%M'))
+        output_directory = os.path.join(RESOURCES_DIRECTORY, datetime.now().strftime(f'edge2vec_{embedder}_%Y%m%d_%H%M'))
         os.makedirs(output_directory, exist_ok=True)
 
     # TODO re-write metadata export
@@ -530,18 +517,19 @@ def run_edge2vec_subgraph(
         graph = read_graph(data_edge2vec_path)
 
         click.echo('creating sub-graph')
-        (subgraph,
-         positive_list,
-         positive_labels,
-         negative_list,
-         negative_labels) = generate_subgraph(
+        (
+            subgraph,
+            positive_list,
+            positive_labels,
+            negative_list,
+            negative_labels,
+        ) = generate_subgraph(
             data_paths.transformed_features_path,
             graph,
             max_simple_path_length=3,
             n_positive=10,  # TODO calculate positive and negative number based on n_train_positive
             n_negative=20,
         )
-
 
         logger.info('dumping pickled subgraph info')
         with open(subgraph_path, 'wb') as file:
@@ -554,46 +542,43 @@ def run_edge2vec_subgraph(
             pickle.dump(negative_list, file, protocol=-1)
         with open(negative_labels_path, 'wb') as file:
             pickle.dump(negative_labels, file, protocol=-1)
-    edge_types=count(subgraph)
+
+    edge_types = count(subgraph)
     number_edge_types = len(count(subgraph))
     click.echo('fitting edge2vec/word2vec')
     if transition_probabilities_path is not None and os.path.exists(transition_probabilities_path):
-            with open(transition_probabilities_path, 'rb') as file:
-                    transition_probabilities = pickle.load(file)
-            logger.warning(f'Loaded pre-computed probabilities from {transition_probabilities_path}')
+        with open(transition_probabilities_path, 'rb') as file:
+            transition_probabilities = pickle.load(file)
+        logger.warning(f'Loaded pre-computed probabilities from {transition_probabilities_path}')
     else:
-            transition_probabilities = calculate_edge_transition_matrix(
-                    graph=subgraph,
-                    number_edge_types=number_edge_types,
-                    directed=directed,
-                    e_step=e_step,
-                    em_iteration=em_iteration,
-                    number_walks=num_walks,
-                    walk_length=walk_length,
-                    p=p,
-                    q=q,
-                    max_count=max_count,
-
-
-                )
+        transition_probabilities = calculate_edge_transition_matrix(
+            graph=subgraph,
+            number_edge_types=number_edge_types,
+            directed=directed,
+            e_step=e_step,
+            em_iteration=em_iteration,
+            number_walks=num_walks,
+            walk_length=walk_length,
+            p=p,
+            q=q,
+            max_count=max_count,
+        )
 
     if transition_probabilities_path is not None:
-            logger.warning(f'Dumping pre-computed probabilities to {transition_probabilities_path}')
-            with open(transition_probabilities_path, 'wb') as file:
-                    pickle.dump(transition_probabilities, file)
-
+        logger.warning(f'Dumping pre-computed probabilities to {transition_probabilities_path}')
+        with open(transition_probabilities_path, 'wb') as file:
+            pickle.dump(transition_probabilities, file)
 
     model = train(
-                transition_matrix=transition_probabilities,
-                graph=subgraph,
-                number_walks=num_walks,
-                walk_length=walk_length,
-                p=p,
-                q=q,
-                size=dimensions,
-                window=window,
-            )
-
+        transition_matrix=transition_probabilities,
+        graph=subgraph,
+        number_walks=num_walks,
+        walk_length=walk_length,
+        p=p,
+        q=q,
+        size=dimensions,
+        window=window,
+    )
 
     click.echo('saving word2vec')
     model.save(os.path.join(output_directory, 'word2vec_model.pickle'))
@@ -615,5 +600,3 @@ def run_edge2vec_subgraph(
         test_vectors,
         test_labels,
     )
-
-
