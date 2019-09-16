@@ -1,6 +1,12 @@
-master_thesis
+DrugReLink
 =============
-This package gets the master thesis of Lingling Xu
+DrugReLink is a tool that optimizes, trains, and evaluates predictive
+models for links in `Hetionet <https://het.io>`_ using different network
+representation learning methods to compare learned features versus the
+topological features presented in [himmelstein2017]_.
+
+This package was developed during the master's thesis of
+`Lingling Xu <https://github.com/lingling93>`_.
 
 Installation
 ------------
@@ -14,8 +20,11 @@ Install from `GitHub <https://github.com/drugrelink/drugrelink>`_ with:
 
 CLI Usage
 ---------
-Run on a subgraph from Himmelstein with:
+Run on a subgraph of Hetionet with:
 
 .. code-block:: sh
 
     $ drugrelink subgraph
+
+.. [himmelstein2017] Himmelstein, D. S., *et al.* (2017). `Systematic integration of biomedical knowledge prioritizes
+                     drugs for repurposing <https://doi.org/10.7554/eLife.26726>`_. ELife, 6.
