@@ -1,5 +1,5 @@
 DrugReLink
-=============
+==========
 DrugReLink is a tool that optimizes, trains, and evaluates predictive
 models for links in `Hetionet <https://het.io>`_ using different network
 representation learning methods to compare learned features versus the
