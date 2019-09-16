@@ -46,9 +46,17 @@ class Predictor:
         )
 
     def get_top_diseases(self, drug: str, k: int = 30):
-        """Get the top 30 diseases for the given drug.
+        """Get the top diseases for the given drug.
 
         >>> from drugrelink.default_predictor import predictor
-        >>> predictor.get_top_diseases('pubchem.compound:1234')
+        >>> predictor.get_top_diseases('Compound::DB00997')
+        ...
+        """
+
+    def get_top_chemicals(self, disease, k: int = 30):
+        """Get the top chemicals for the given disease.
+
+        >>> from drugrelink.default_predictor import predictor
+        >>> predictor.get_top_diseases('Disease::DOID:1936')
         ...
         """
