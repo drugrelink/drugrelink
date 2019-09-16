@@ -103,7 +103,7 @@ def run_node2vec_graph(
             os.makedirs(sub_output_directory)
             if not permutation_number:
                 graph = create_himmelstein_graph(data_paths.node_data_path, data_paths.edge_data_path)
-            elif permutation_number == 1:
+            else:
                 graph = convert(data_paths.permutation_paths[permutation_number - 1], permutation_number)
             model = fit_node2vec(
                 graph,
@@ -203,8 +203,8 @@ def run_edge2vec_graph(
 
             if transition_probabilities_path is not None:
                 logger.warning(f'Dumping pre-computed probabilities to {transition_probabilities_path}')
-                with open(transition_probabilities_path, 'wb') as file:
-                    np.save(file, transition_probabilities)
+                with open(transition_probabilities_path, 'wb') as file_tp:
+                    np.save(file_tp, transition_probabilities)
             sub_output_directory = os.path.join(output_directory, str(i))
             os.makedirs(sub_output_directory)
 
@@ -600,3 +600,49 @@ def run_edge2vec_subgraph(
         test_vectors,
         test_labels,
     )
+
+def retrain(
+        *
+        method:str,
+        input_directory:str=None,
+        output_directory:str=None,
+            ):
+    data_paths = get_data_paths(directory=input_directory)
+    disease_modifying, clinical_trials, drug_central, symptomatic = test_pairs(
+                validation_path=data_paths.validate_data_path,
+                symptomatic_path=data_paths.symptomatic_data_path,
+                train_path=data_paths.transformed_features_path,
+            )
+    all_train_data = np.concatenate(disease_modifying,clinical_trials, drug_central, symptomatic)
+    embedder_function = EMBEDDERS['hardamard']
+    lg_path_list = []
+    for i in range(0,10):
+        model_path = os.path.join(RESOURCES_DIRECTORY,'predictive_model',method,str(i),'word2vec_model.pickle')
+        if not output_directory:
+            lg_path = os.path.join(RESOURCES_DIRECTORY,'predictive_model',method,str(i),'logistic_regression.joblib')
+        else:
+            lg_path = os.path.join(output_directory,method,str(i),'logistic_regression.joblib')
+        model = pickle.load(open(model_path,'rb'))
+        all_train_vectors = embedder_function(model, all_train_data[0])
+        all_train_labels = all_train_data[1]
+        lg = train_logistic_regression(all_train_vectors, all_train_labels)
+        with open(lg_path, 'wb') as file:
+            joblib.dump(lg, file)
+        lg_path_list.append(lg_path)
+    return lg_path_list
+
+def predict(
+        *
+        method:str,
+        lg_path_list:str,
+        output_directory:str = None,
+):
+
+    for path in lg_path_list:
+        if path is not None and os.path.exisits(lg_path_list):
+
+
+
+
+
+

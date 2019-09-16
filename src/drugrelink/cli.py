@@ -28,39 +28,47 @@ def main(config: str, debug: bool):
     # Interpret as JSON file
     config = json.load(config)
     # Get high level configuration
-    method = config.pop('method', 'node2vec')  # by default, use node2vec
+    method = config['method'] # by default, use node2vec
     graph_type = config.pop('graph_type', 'graph')  # by default, do the whole graph
     # Choose the appropriate function then pass the rest of the configuration there
     # using the splat operator
-    if method == 'node2vec':
-        if graph_type == 'graph':
-            return run_node2vec_graph(**config)
+    if not config['retrain'] and config['predict']:
 
-        elif graph_type == 'subgraph':
-            return run_node2vec_subgraph(**config)
+        if method == 'node2vec':
+            if graph_type == 'graph':
+                return run_node2vec_graph(**config)
 
-        elif graph_type == 'permutation':
-            return run_node2vec_graph(**config)
+            elif graph_type == 'subgraph':
+                return run_node2vec_subgraph(**config)
+
+            elif graph_type == 'permutation':
+                return run_node2vec_graph(**config)
+
+            else:
+                click.echo(f'Unsupported graph_type={graph_type}')
+                return sys.exit(1)
+
+
+
+        elif method == 'edge2vec':
+            if graph_type == 'graph':
+                return run_edge2vec_graph(**config)
+            elif graph_type == 'subgraph':
+                return run_edge2vec_subgraph(**config)
+
+            else:
+                click.echo(f'Unsupported graph_type={graph_type}')
+                return sys.exit(1)
 
         else:
-            click.echo(f'Unsupported graph_type={graph_type}')
+            click.echo(f'Unsupported method={method}')
             return sys.exit(1)
 
+    elif config['retrain']:
+       return retrain(**config)
 
+    else config['predict']:
 
-    elif method == 'edge2vec':
-        if graph_type == 'graph':
-            return run_edge2vec_graph(**config)
-        elif graph_type == 'subgraph':
-            return run_edge2vec_subgraph(**config)
-
-        else:
-            click.echo(f'Unsupported graph_type={graph_type}')
-            return sys.exit(1)
-
-    else:
-        click.echo(f'Unsupported method={method}')
-        return sys.exit(1)
 
 
 if __name__ == '__main__':
