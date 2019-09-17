@@ -4,11 +4,13 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Mapping
 
 import joblib
 import numpy as np
+from gensim.models import Word2Vec
+from node2vec.edges import EdgeEmbedder, HadamardEmbedder
 from sklearn.linear_model import LogisticRegression
 
 Embeddings = Mapping[str, np.ndarray]
@@ -18,53 +20,59 @@ __all__ = [
 ]
 
 
-def load_embeddings(path: str) -> Embeddings:
-    pass
+def _load_embeddings(path: str) -> Embeddings:
+    raise NotImplementedError
+
+
+def _load_word2vec(path: str) -> Word2Vec:
+    raise NotImplementedError
 
 
 @dataclass
 class Predictor:
     """"""
 
-    model: LogisticRegression
+    #: Word2Vec model
+    word2vec: Word2Vec
     embeddings: Embeddings
+
+    #: Model trained on edge embeddings
+    model: LogisticRegression
+
+    #: The edge embedder
+    edge_embedder: EdgeEmbedder = field(init=False)
+
+    def __post_init__(self) -> None:
+        """Initialize derived fields."""
+        self.edge_embedder = HadamardEmbedder(self.word2vec.wv)
 
     @classmethod
     def from_paths(
         cls,
         *,
         model_path: str,
+        word2vec_path: str,
         embeddings_path: str,
     ) -> Predictor:
         """Generate a predictor."""
         model = joblib.load(model_path)
-        embeddings = load_embeddings(embeddings_path)
+        word2vec = _load_word2vec(word2vec_path)
+        embeddings = _load_embeddings(embeddings_path)
 
         return Predictor(
             model=model,
+            word2vec=word2vec,
             embeddings=embeddings,
         )
 
-    def get_edge_probability(self, source_id: str, target_id: str) -> float:
-        """Get the probability of the edge between the two nodes."""
-        edge_embedding = self.get_edge_embedding(source_id, target_id)
-        return self._predict_helper([edge_embedding.tolist()])[0]
-
-    def get_edge_embedding(self, source_id: str, target_id: str) -> np.ndarray:
-        """Get the embedding of the edge between the two nodes."""
-        return self.embeddings[source_id] * self.embeddings[target_id]
-
-    def _predict_helper(self, edge_embedding):
-        # FIXME is this a 0 or a 1?!?!
-        return self.model.predict_proba(edge_embedding)[:, 0]
-
-    def get_top_diseases(self, drug: str, k: int = 30):
+    def get_top_diseases(self, source_id: str, k: int = 30):
         """Get the top diseases for the given drug.
 
         >>> from drugrelink.default_predictor import predictor
         >>> predictor.get_top_diseases('Compound::DB00997')
         ...
         """
+        return self._get_top_prefixed(source_id, 'Disease::')
 
     def get_top_chemicals(self, disease, k: int = 30):
         """Get the top chemicals for the given disease.
@@ -73,3 +81,17 @@ class Predictor:
         >>> predictor.get_top_diseases('Disease::DOID:1936')
         ...
         """
+        return self._get_top_prefixed(disease, 'Compound::')
+
+    def _get_top_prefixed(self, source_id, prefix) -> Mapping[str, np.ndarray]:
+        target_ids = [
+            target_id
+            for target_id in self.embeddings
+            if source_id != target_id and target_id.startswith(prefix)
+        ]
+        edge_embeddings = [
+            self.edge_embedder[source_id, target_id]
+            for target_id in target_ids
+        ]
+        probabilities = self.model.predict_proba(edge_embeddings)[:, 0]
+        return dict(zip(target_ids, probabilities))
