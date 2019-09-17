@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 
+import pickle
 from dataclasses import dataclass, field
 from typing import Mapping
 
@@ -20,21 +21,12 @@ __all__ = [
 ]
 
 
-def _load_embeddings(path: str) -> Embeddings:
-    raise NotImplementedError
-
-
-def _load_word2vec(path: str) -> Word2Vec:
-    raise NotImplementedError
-
-
 @dataclass
 class Predictor:
     """"""
 
     #: Word2Vec model
     word2vec: Word2Vec
-    embeddings: Embeddings
 
     #: Model trained on edge embeddings
     model: LogisticRegression
@@ -52,17 +44,16 @@ class Predictor:
         *,
         model_path: str,
         word2vec_path: str,
-        embeddings_path: str,
     ) -> Predictor:
         """Generate a predictor."""
         model = joblib.load(model_path)
-        word2vec = _load_word2vec(word2vec_path)
-        embeddings = _load_embeddings(embeddings_path)
+
+        with open(word2vec_path, 'rb') as file:
+            word2vec = pickle.load(file)
 
         return Predictor(
             model=model,
             word2vec=word2vec,
-            embeddings=embeddings,
         )
 
     def get_top_diseases(self, source_id: str, k: int = 30):
@@ -86,7 +77,7 @@ class Predictor:
     def _get_top_prefixed(self, source_id, prefix) -> Mapping[str, np.ndarray]:
         target_ids = [
             target_id
-            for target_id in self.embeddings
+            for target_id in self.word2vec.wv
             if source_id != target_id and target_id.startswith(prefix)
         ]
         edge_embeddings = [
