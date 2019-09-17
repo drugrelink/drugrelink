@@ -14,9 +14,9 @@ from typing import List, Optional
 import click
 import joblib
 import numpy as np
+from edge2vec import calculate_edge_transition_matrix, read_graph, train
 from glmnet.logistic import LogitNet
 
-from edge2vec import calculate_edge_transition_matrix, read_graph, train
 from .constants import RESOURCES_DIRECTORY
 from .create_graph import create_himmelstein_graph
 from .download import get_data_paths
@@ -188,7 +188,7 @@ def run_edge2vec_graph(
             if transition_probabilities_path is not None and os.path.exists(transition_probabilities_path):
                 with open(transition_probabilities_path, 'rb') as file:
                     transition_probabilities = np.load(file)
-                logger.warning(f'Loaded pre-computed probabilities from {transition_probabilities_path}')
+                logger.info(f'Loaded pre-computed probabilities from {transition_probabilities_path}')
             else:
                 transition_probabilities = calculate_edge_transition_matrix(
                     graph=graph,
@@ -203,7 +203,7 @@ def run_edge2vec_graph(
                 )
 
             if transition_probabilities_path is not None:
-                logger.warning(f'Dumping pre-computed probabilities to {transition_probabilities_path}')
+                logger.info(f'Dumping pre-computed probabilities to {transition_probabilities_path}')
                 np.save(transition_probabilities_path, transition_probabilities)
 
             sub_output_directory = os.path.join(output_directory, str(i))
@@ -251,7 +251,7 @@ def run_edge2vec_graph(
                 test_sy_vectors,
                 test_sy_labels,
             )
-        logger.warning(datetime.now())
+        logger.info(datetime.now())
 
 
 def run_node2vec_subgraph(
@@ -356,7 +356,7 @@ def run_node2vec_subgraph(
         test_vectors,
         test_labels,
     )
-    logger.warning(datetime.now())
+    logger.info(datetime.now())
 
 
 def _train_evaluate_generate_artifacts(
@@ -401,12 +401,12 @@ def _train_evaluate_generate_artifacts(
     with open(os.path.join(output_directory, 'test.json'), 'w') as file:
         json.dump(test_dict, file)
 
-    logger.warning('training logistic regression classifier')
+    logger.info('training logistic regression classifier')
     logit_net: LogitNet = train_logistic_regression(train_vectors, train_labels)
     with open(os.path.join(output_directory, 'logistic_regression_clf.joblib'), 'wb') as file:
         joblib.dump(logit_net, file)
 
-    logger.warning('validating logistic regression classifier')
+    logger.info('validating logistic regression classifier')
     if not test_ct_vectors:
         roc, y_pro, y_labels = validate(logit_net, test_dm_vectors, test_dm_labels)
         y_pro = list(map(list, y_pro))
@@ -546,7 +546,7 @@ def run_edge2vec_subgraph(
     if transition_probabilities_path is not None and os.path.exists(transition_probabilities_path):
         with open(transition_probabilities_path, 'rb') as file:
             transition_probabilities = pickle.load(file)
-        logger.warning(f'Loaded pre-computed probabilities from {transition_probabilities_path}')
+        logger.info(f'Loaded pre-computed probabilities from {transition_probabilities_path}')
     else:
         transition_probabilities = calculate_edge_transition_matrix(
             graph=subgraph,
@@ -561,7 +561,7 @@ def run_edge2vec_subgraph(
         )
 
     if transition_probabilities_path is not None:
-        logger.warning(f'Dumping pre-computed probabilities to {transition_probabilities_path}')
+        logger.info(f'Dumping pre-computed probabilities to {transition_probabilities_path}')
         with open(transition_probabilities_path, 'wb') as file:
             pickle.dump(transition_probabilities, file)
 

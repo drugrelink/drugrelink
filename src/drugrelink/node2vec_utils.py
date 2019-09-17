@@ -29,15 +29,15 @@ class _SubNode2Vec(Node2Vec):
         if self.transition_probabilities_path is not None and os.path.exists(self.transition_probabilities_path):
             with open(self.transition_probabilities_path, 'rb') as file:
                 self.d_graph = pickle.load(file)
-                logger.warning(f'Loaded pre-computed probabilities from {self.transition_probabilities_path}')
+                logger.info(f'Loaded pre-computed probabilities from {self.transition_probabilities_path}')
                 return
 
-        logger.warning('Begin pre-computing probabilities')
+        logger.info('Begin pre-computing probabilities')
         super()._precompute_probabilities()
-        logger.warning('Finished pre-computing probabilities')
+        logger.info('Finished pre-computing probabilities')
 
         if self.transition_probabilities_path is not None:
-            logger.warning(f'Dumping pre-computed probabilities to {self.transition_probabilities_path}')
+            logger.info(f'Dumping pre-computed probabilities to {self.transition_probabilities_path}')
             with open(self.transition_probabilities_path, 'wb') as file:
                 pickle.dump(self.d_graph, file)
 
@@ -70,8 +70,7 @@ def fit_node2vec(
     num_walks=10,
     window=10,
     p=1,
-    q=1
-
+    q=1,
 ) -> gensim.models.Word2Vec:
     """
 

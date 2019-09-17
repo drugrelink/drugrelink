@@ -58,27 +58,27 @@ def get_data_paths(directory: Optional[str] = None) -> DataPaths:
 
     node_data_path = os.path.join(directory, 'nodes.tsv')
     if not os.path.exists(node_data_path):
-        logger.warning(f'downloading {NODE_DATA_URL}')
+        logger.info(f'downloading {NODE_DATA_URL}')
         urlretrieve(NODE_DATA_URL, node_data_path)
 
     edge_data_path = os.path.join(directory, 'edges.sif.gz')
     if not os.path.exists(edge_data_path):
-        logger.warning(f'downloading {EDGE_DATA_URL}')
+        logger.info(f'downloading {EDGE_DATA_URL}')
         urlretrieve(EDGE_DATA_URL, edge_data_path)
 
     transformed_features_path = os.path.join(directory, 'transformed-features.tsv.bz2')
     if not os.path.exists(transformed_features_path):
-        logger.warning(f'downloading {TRANSFORMED_FEATURES_URL}')
+        logger.info(f'downloading {TRANSFORMED_FEATURES_URL}')
         urlretrieve(TRANSFORMED_FEATURES_URL, transformed_features_path)
 
     validate_data_path = os.path.join(directory, 'validation-statuses.tsv')
     if not os.path.exists(validate_data_path):
-        logger.warning(f'downloading {VALIDATE_DATA_URL}')
+        logger.info(f'downloading {VALIDATE_DATA_URL}')
         urlretrieve(VALIDATE_DATA_URL, validate_data_path)
 
     symptomatic_data_path = os.path.join(directory, 'probabilities.tsv')
     if not os.path.exists(symptomatic_data_path):
-        logger.warning(f'downloading {SYMPTOMATIC_DATA_URL}')
+        logger.info(f'downloading {SYMPTOMATIC_DATA_URL}')
         urlretrieve(SYMPTOMATIC_DATA_URL, symptomatic_data_path)
 
     permutation_directory = os.path.join(directory, "permutations")
@@ -89,10 +89,11 @@ def get_data_paths(directory: Optional[str] = None) -> DataPaths:
         permutation_data_path = os.path.join(permutation_directory, PERMUTATION_DATA_FILE_FMT.format(i + 1))
         if not os.path.exists(permutation_data_path):
             url = PERMUTATION_DATA_URL_FMT.format(i + 1)
-            logger.warning(f'downloading {url}')
+            logger.info(f'downloading {url}')
             urlretrieve(url, permutation_data_path)
         permutation_paths.append(permutation_data_path)
     data_edge2vec_path = os.path.join(directory, 'data_edge2vec')
+
     return DataPaths(
         node_data_path=node_data_path,
         edge_data_path=edge_data_path,
