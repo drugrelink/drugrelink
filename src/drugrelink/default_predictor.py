@@ -9,6 +9,7 @@ import click
 
 from .constants import RESOURCES_DIRECTORY
 from .prediction import Predictor
+from .consensus_prediction import ConsensusPrediction
 
 __all__ = [
     'predictor',
@@ -23,42 +24,48 @@ assert os.path.exists(DEFAULT_MODEL_PATH)
 DEFAULT_WORD2VEC_MODEL_PATH = os.path.join(EDGE2VEC_PREDICTIVE_MODEL_DIRECTORY, 'word2vec_model.pickle')
 assert os.path.exists(DEFAULT_WORD2VEC_MODEL_PATH)
 
-predictor = Predictor.from_paths(
-    model_path=DEFAULT_MODEL_PATH,
-    word2vec_path=DEFAULT_WORD2VEC_MODEL_PATH,
-)
-
 
 @click.command()
 @click.option('-c', '--chemical',type=str)
 @click.option('-d', '--disease', type=str)
 @click.option('-m', '--method', type =click.Choice(['node2vec','edge2vec']), default ='edge2vec')
-def main(chemical,disease,method):
+@click.option('-s', '--consensus', type = bool, default =True)
+def main(chemical,disease,method,consensus):
     """Predict diseases for the given chemical.
 
     Use ``drugrelink-repurpose DB00997`` to show examples
     for `Doxorubicin <https://identifies.org/drugbank:DB00997>`_.
     """
-    if method == 'node2vec':
-        pass
-    elif method == 'edge2vec':
-        if chemical:
+    if not consensus:
 
-            if chemical.startswith('drugbank:'):
-                chemical_id = chemical[len('drugbank:'):]
+        predictor = Predictor.from_paths(
+        model_path=DEFAULT_MODEL_PATH,
+        word2vec_path=DEFAULT_WORD2VEC_MODEL_PATH,
+    )
 
-            if not chemical.startswith('Compound::'):
-                chemical_id = f'Compound::{chemical}'
+        if method == 'node2vec':
+            pass
+        elif method == 'edge2vec':
+            if chemical:
 
-            predictions = predictor.get_top_diseases(chemical_id)
-            click.echo(json.dumps(predictions, indent=2))
-        if disease:
-            if disease.startswith('DOID:'):
-                disease_id = f'Disease::{disease}'
-            if not disease.startswith('DOID:'):
-                disease_id = f'Disease::DOID:{disease}'
-            predictions = predictor.get_top_chemicals(disease_id)
-            click.echo(json.dumps(predictions, indent=2))
+                if chemical.startswith('drugbank:'):
+                    chemical_id = chemical[len('drugbank:'):]
+
+                if not chemical.startswith('Compound::'):
+                    chemical_id = f'Compound::{chemical}'
+
+                predictions = predictor.get_top_diseases(chemical_id)
+                click.echo(json.dumps(predictions, indent=2))
+            if disease:
+                if disease.startswith('DOID:'):
+                    disease_id = f'Disease::{disease}'
+                if not disease.startswith('DOID:'):
+                    disease_id = f'Disease::DOID:{disease}'
+                predictions = predictor.get_top_chemicals(disease_id)
+                click.echo(json.dumps(predictions, indent=2))
+    else:
+        ConsensusPrediction(method=method,chemical=chemical,disease=disease,output_directory=None).consensus()
+
 
 if __name__ == '__main__':
     main()

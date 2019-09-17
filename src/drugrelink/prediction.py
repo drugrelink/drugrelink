@@ -18,6 +18,7 @@ from sklearn.linear_model import LogisticRegression
 from .download import get_data_paths
 
 
+
 data_paths = get_data_paths()
 node_path = data_paths.node_data_path
 nodes_df = pd.read_csv (node_path,sep='\t')
@@ -48,8 +49,6 @@ class Predictor:
         self.edge_embedder = HadamardEmbedder(self.word2vec.wv)
     @classmethod
     def from_paths(
-        cls,
-        *,
         model_path: str,
         word2vec_path: str,
     ) -> Predictor:
@@ -114,4 +113,5 @@ class Predictor:
         target_names = [nodes_dict[target_id]
                         for target_id in target_ids]
         probabilities = self.model.predict_proba(edge_embeddings)[:,0]
-        return dict(zip(target_names, probabilities))
+        print(dict(zip(target_names, probabilities)))
+        return target_names,probabilities
