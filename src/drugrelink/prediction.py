@@ -57,20 +57,37 @@ class Predictor:
         )
 
     def get_top_diseases(self, source_id: str, k: int = 30):
-        """Get the top diseases for the given drug.
+        """Get the top diseases for the given entity.
+
+        >>> from drugrelink.default_predictor import predictor
+        >>> predictor.get_top_diseases('Compound::DB00997')
+        ...
+
+        Which diseases is HDAC6 involved in?
+
+        >>> predictor.get_top_diseases('Gene::10013')
+        """
+        return self._get_top_prefixed(source_id, 'Disease::')
+
+    def get_top_targets(self, source_id, k: int = 30):
+        """Get the top targets for the given entity.
 
         >>> from drugrelink.default_predictor import predictor
         >>> predictor.get_top_diseases('Compound::DB00997')
         ...
         """
-        return self._get_top_prefixed(source_id, 'Disease::')
+        return self._get_top_prefixed(source_id, 'Compound::')
 
     def get_top_chemicals(self, disease, k: int = 30):
-        """Get the top chemicals for the given disease.
+        """Get the top chemicals for the given entity.
 
         >>> from drugrelink.default_predictor import predictor
         >>> predictor.get_top_diseases('Disease::DOID:1936')
         ...
+
+        Which chemicals might inhibit HDAC6?
+
+        >>> predictor.get_top_chemicals('Gene::10013')
         """
         return self._get_top_prefixed(disease, 'Compound::')
 
