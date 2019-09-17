@@ -32,7 +32,7 @@ predictor = Predictor.from_paths(
 @click.command()
 @click.option('-c', '--chemical',type=str)
 @click.option('-d', '--disease', type=str)
-@click.option('-m', '--method', typte =click.Choice(['node2vec','edge2vec']), default ='node2vec')
+@click.option('-m', '--method', type =click.Choice(['node2vec','edge2vec']), default ='edge2vec')
 def main(chemical,disease,method):
     """Predict diseases for the given chemical.
 
@@ -48,7 +48,7 @@ def main(chemical,disease,method):
                 chemical_id = chemical[len('drugbank:'):]
 
             if not chemical.startswith('Compound::'):
-                chemical_id = f'Compound::{chemical_id}'
+                chemical_id = f'Compound::{chemical}'
 
             predictions = predictor.get_top_diseases(chemical_id)
             click.echo(json.dumps(predictions, indent=2))
