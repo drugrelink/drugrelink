@@ -8,7 +8,7 @@ import sys
 
 import click
 
-from .pipeline import run_edge2vec_graph, run_edge2vec_subgraph, run_node2vec_graph, run_node2vec_subgraph
+from .pipeline import run_edge2vec_graph, run_edge2vec_subgraph, run_node2vec_graph, run_node2vec_subgraph, retrain, predict
 
 __all__ = [
     'main',
@@ -28,7 +28,7 @@ def main(config: str, debug: bool):
     # Interpret as JSON file
     config = json.load(config)
     # Get high level configuration
-    method = config['method'] # by default, use node2vec
+    method = config['method']  # by default, use node2vec
     graph_type = config.pop('graph_type', 'graph')  # by default, do the whole graph
     # Choose the appropriate function then pass the rest of the configuration there
     # using the splat operator
@@ -48,8 +48,6 @@ def main(config: str, debug: bool):
                 click.echo(f'Unsupported graph_type={graph_type}')
                 return sys.exit(1)
 
-
-
         elif method == 'edge2vec':
             if graph_type == 'graph':
                 return run_edge2vec_graph(**config)
@@ -65,11 +63,10 @@ def main(config: str, debug: bool):
             return sys.exit(1)
 
     elif config['retrain']:
-       return retrain(**config)
+        return retrain(**config)
 
-    else config['predict']:
+    elif config['predict']:
         return predict(**config)
-
 
 
 if __name__ == '__main__':

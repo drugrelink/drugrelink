@@ -2,23 +2,25 @@
 
 """Main functions for running the repositioning comparison."""
 
+import itertools as itt
 import json
 import logging
 import os
 import pickle
+from collections import defaultdict
 from datetime import datetime
-from typing import Optional
+from typing import List, Optional
 
 import click
 import joblib
 import numpy as np
-from edge2vec import calculate_edge_transition_matrix, read_graph, train
+from glmnet.logistic import LogitNet
 
+from edge2vec import calculate_edge_transition_matrix, read_graph, train
 from .constants import RESOURCES_DIRECTORY
-from .count_edge_types import count
 from .create_graph import create_himmelstein_graph
 from .download import get_data_paths
-from .embedders import EMBEDDERS
+from .embedders import get_embedder
 from .graph_edge2vec import prepare_edge2vec
 from .node2vec_utils import fit_node2vec
 from .pairs import test_pairs, train_pairs
@@ -39,10 +41,9 @@ def run_node2vec_graph(
     permutation_number=None,
     output_directory: Optional[str] = None,
     input_directory: Optional[str] = None,
-    repeat=1,
+    repeat: int = 1,
     p: Optional[int] = None,
-    q: Optional[int] = None
-
+    q: Optional[int] = None,
 ) -> None:
     """
     Run the node2vec pipeline
@@ -56,30 +57,32 @@ def run_node2vec_graph(
     :param input_directory: The path of input directory
     :param repeat: Repeat times of one experiment
     :param p: Return hyper parameter
-    :param q:Inout paramete
+    :param q: Inout parameter
     :return: None
     """
     if output_directory is None:
-        output_directory = os.path.join(RESOURCES_DIRECTORY, datetime.now().strftime(f'node2vec_{embedder}_%Y%m%d_%H%M'))
+        output_directory = os.path.join(RESOURCES_DIRECTORY,
+                                        datetime.now().strftime(f'node2vec_{embedder}_%Y%m%d_%H%M'))
         os.makedirs(output_directory, exist_ok=True)
 
     with open(os.path.join(output_directory, 'metadata.json'), 'w') as file:
-
-        json.dump({
-            'dimensions': dimensions,
-            'walk_length': walk_length,
-            'num_walks': num_walks,
-            'embedder': embedder,
-            'input_directory': input_directory,
-            'output_directory': output_directory,
-            'window': window,
-            'p': p,
-            'q': q,
-            'repeat': repeat,
-        },
+        json.dump(
+            {
+                'dimensions': dimensions,
+                'walk_length': walk_length,
+                'num_walks': num_walks,
+                'embedder': embedder,
+                'input_directory': input_directory,
+                'output_directory': output_directory,
+                'window': window,
+                'p': p,
+                'q': q,
+                'repeat': repeat,
+            },
             file,
             indent=2,
-            sort_keys=True)
+            sort_keys=True,
+        )
     # validation_directory = os.path.join(output_directory,'validations')
     # os.makedirs(validation_directory, exist_ok=True)
     if repeat:
@@ -105,6 +108,7 @@ def run_node2vec_graph(
                 graph = create_himmelstein_graph(data_paths.node_data_path, data_paths.edge_data_path)
             else:
                 graph = convert(data_paths.permutation_paths[permutation_number - 1], permutation_number)
+
             model = fit_node2vec(
                 graph,
                 transition_probabilities_path=transition_probability_path,
@@ -113,9 +117,10 @@ def run_node2vec_graph(
                 num_walks=num_walks,
                 window=window,
                 p=p,
-                q=q)
+                q=q,
+            )
             model.save(os.path.join(sub_output_directory, 'word2vec_model.pickle'))
-            embedder_function = EMBEDDERS[embedder]
+            embedder_function = get_embedder(embedder)
             train_list, train_labels = train_pairs(data_paths.transformed_features_path)
             #  TODO why build multiple embedders separately and not single one then split vectors after the fact?
             train_vectors = embedder_function(model, train_list)
@@ -154,10 +159,9 @@ def run_edge2vec_graph(
     num_walks: int,
     window: int,
     embedder: str = "hadamard",
-    permutation_number=None,
     output_directory: Optional[str] = None,
     input_directory: Optional[str] = None,
-    repeat=1,
+    repeat: int = 1,
     p: Optional[int] = None,
     q: Optional[int] = None,
     directed: bool = False,
@@ -168,9 +172,7 @@ def run_edge2vec_graph(
     data_paths = get_data_paths(directory=input_directory)
     edge_path = data_paths.edge_data_path
     data_edge2vec_path = data_paths.data_edge2vec_path
-    if os.path.exists(data_edge2vec_path):
-        pass
-    else:
+    if not os.path.exists(data_edge2vec_path):
         prepare_edge2vec(edge_path, data_edge2vec_path)
     graph = read_graph(data_edge2vec_path)
 
@@ -197,14 +199,13 @@ def run_edge2vec_graph(
                     walk_length=walk_length,
                     p=p,
                     q=q,
-                    walk_sample_size=max_count
-
+                    walk_sample_size=max_count,
                 )
 
             if transition_probabilities_path is not None:
                 logger.warning(f'Dumping pre-computed probabilities to {transition_probabilities_path}')
-                with open(transition_probabilities_path, 'wb') as file_tp:
-                    np.save(file_tp, transition_probabilities)
+                np.save(transition_probabilities_path, transition_probabilities)
+
             sub_output_directory = os.path.join(output_directory, str(i))
             os.makedirs(sub_output_directory)
 
@@ -216,11 +217,11 @@ def run_edge2vec_graph(
                 p=p,
                 q=q,
                 size=dimensions,
-                window=window
+                window=window,
             )
             model.save(os.path.join(sub_output_directory, 'word2vec_model.pickle'))
             model.wv.save_word2vec_format(os.path.join(sub_output_directory, 'word2vec_wv'))
-            embedder_function = EMBEDDERS[embedder]
+            embedder_function = get_embedder(embedder)
             train_list, train_labels = train_pairs(data_paths.transformed_features_path)
             #  TODO why build multiple embedders separately and not single one then split vectors after the fact?
             train_vectors = embedder_function(model, train_list)
@@ -263,10 +264,10 @@ def run_node2vec_subgraph(
     embedder: str = "hadamard",
     output_directory: Optional[str] = None,
     input_directory: Optional[str] = None,
-
 ) -> None:
     if output_directory is None:
-        output_directory = os.path.join(RESOURCES_DIRECTORY, datetime.now().strftime(f'node2vec_{embedder}_%Y%m%d_%H%M'))
+        output_directory = os.path.join(RESOURCES_DIRECTORY,
+                                        datetime.now().strftime(f'node2vec_{embedder}_%Y%m%d_%H%M'))
         os.makedirs(output_directory, exist_ok=True)
 
     # TODO re-write metadata export
@@ -339,7 +340,7 @@ def run_node2vec_subgraph(
     model.save(os.path.join(output_directory, 'word2vec_model.pickle'))
 
     click.echo('generating vectors')
-    embedder_function = EMBEDDERS[embedder]
+    embedder_function = get_embedder(embedder)
     positive_vectors = embedder_function(model, positive_list)
     negative_vectors = embedder_function(model, negative_list)
 
@@ -401,24 +402,23 @@ def _train_evaluate_generate_artifacts(
         json.dump(test_dict, file)
 
     logger.warning('training logistic regression classifier')
-    logistic_regression = train_logistic_regression(train_vectors, train_labels)
+    logit_net: LogitNet = train_logistic_regression(train_vectors, train_labels)
     with open(os.path.join(output_directory, 'logistic_regression_clf.joblib'), 'wb') as file:
-        joblib.dump(logistic_regression, file)
+        joblib.dump(logit_net, file)
 
     logger.warning('validating logistic regression classifier')
     if not test_ct_vectors:
-
-        roc, y_pro = validate(logistic_regression, test_dm_vectors, test_dm_labels)
+        roc, y_pro, y_labels = validate(logit_net, test_dm_vectors, test_dm_labels)
         y_pro = list(map(list, y_pro))
         roc_dict = {
             'ROC:': roc,
             'y_probability': y_pro,
         }
     else:
-        dm_roc, dm_yp, dm_pre = validate(logistic_regression, test_dm_vectors, test_dm_labels)
-        ct_roc, ct_yp, ct_pre = validate(logistic_regression, test_ct_vectors, test_ct_labels)
-        dc_roc, dc_yp, dc_pre = validate(logistic_regression, test_dc_vectors, test_dc_labels)
-        sy_roc, sy_yp, sy_pre = validate(logistic_regression, test_sy_vectors, test_sy_labels)
+        dm_roc, dm_yp, dm_pre = validate(logit_net, test_dm_vectors, test_dm_labels)
+        ct_roc, ct_yp, ct_pre = validate(logit_net, test_ct_vectors, test_ct_labels)
+        dc_roc, dc_yp, dc_pre = validate(logit_net, test_dc_vectors, test_dc_labels)
+        sy_roc, sy_yp, sy_pre = validate(logit_net, test_sy_vectors, test_sy_labels)
         dm_yp = list(map(list, dm_yp))
         ct_yp = list(map(list, ct_yp))
         dc_yp = list(map(list, dc_yp))
@@ -462,10 +462,8 @@ def run_edge2vec_subgraph(
     num_walks: int,
     window: int,
     embedder: str = "hadamard",
-    permutation_number=None,
     output_directory: Optional[str] = None,
     input_directory: Optional[str] = None,
-    repeat=1,
     p: Optional[int] = None,
     q: Optional[int] = None,
     directed: bool = False,
@@ -477,7 +475,8 @@ def run_edge2vec_subgraph(
 
 ) -> None:
     if output_directory is None:
-        output_directory = os.path.join(RESOURCES_DIRECTORY, datetime.now().strftime(f'edge2vec_{embedder}_%Y%m%d_%H%M'))
+        output_directory = os.path.join(RESOURCES_DIRECTORY,
+                                        datetime.now().strftime(f'edge2vec_{embedder}_%Y%m%d_%H%M'))
         os.makedirs(output_directory, exist_ok=True)
 
     # TODO re-write metadata export
@@ -486,10 +485,10 @@ def run_edge2vec_subgraph(
     data_paths = get_data_paths(directory=input_directory)
     edge_path = data_paths.edge_data_path
     data_edge2vec_path = data_paths.data_edge2vec_path
-    if os.path.exists(data_edge2vec_path):
-        pass
-    else:
+
+    if not os.path.exists(data_edge2vec_path):
         prepare_edge2vec(edge_path, data_edge2vec_path)
+
     transition_probabilities_path = os.path.join(output_directory, 'transition_probabilities.json')
 
     subgraph_path = os.path.join(output_directory, 'subgraph.pickle')
@@ -543,8 +542,6 @@ def run_edge2vec_subgraph(
         with open(negative_labels_path, 'wb') as file:
             pickle.dump(negative_labels, file, protocol=-1)
 
-    edge_types = count(subgraph)
-    number_edge_types = len(count(subgraph))
     click.echo('fitting edge2vec/word2vec')
     if transition_probabilities_path is not None and os.path.exists(transition_probabilities_path):
         with open(transition_probabilities_path, 'rb') as file:
@@ -553,7 +550,6 @@ def run_edge2vec_subgraph(
     else:
         transition_probabilities = calculate_edge_transition_matrix(
             graph=subgraph,
-            number_edge_types=number_edge_types,
             directed=directed,
             e_step=e_step,
             em_iteration=em_iteration,
@@ -584,7 +580,7 @@ def run_edge2vec_subgraph(
     model.save(os.path.join(output_directory, 'word2vec_model.pickle'))
 
     click.echo('generating vectors')
-    embedder_function = EMBEDDERS[embedder]
+    embedder_function = get_embedder(embedder)
     positive_vectors = embedder_function(model, positive_list)
     negative_vectors = embedder_function(model, negative_list)
 
@@ -601,70 +597,73 @@ def run_edge2vec_subgraph(
         test_labels,
     )
 
+
 def retrain(
-        *
-        method:str,
-        input_directory:str=None,
-        output_directory:str=None,
-            ):
+    *
+    method: str,
+    input_directory: str = None,
+    output_directory: str = None,
+    n_retrains: int = 10,
+) -> List[str]:
     data_paths = get_data_paths(directory=input_directory)
     disease_modifying, clinical_trials, drug_central, symptomatic = test_pairs(
-                validation_path=data_paths.validate_data_path,
-                symptomatic_path=data_paths.symptomatic_data_path,
-                train_path=data_paths.transformed_features_path,
-            )
-    all_train_data = np.concatenate(disease_modifying,clinical_trials, drug_central, symptomatic)
-    embedder_function = EMBEDDERS['hardamard']
-    lg_path_list = []
-    for i in range(0,10):
-        model_path = os.path.join(RESOURCES_DIRECTORY,'predictive_model',method,str(i),'word2vec_model.pickle')
+        validation_path=data_paths.validate_data_path,
+        symptomatic_path=data_paths.symptomatic_data_path,
+        train_path=data_paths.transformed_features_path,
+    )
+    all_train_data = np.concatenate(disease_modifying, clinical_trials, drug_central, symptomatic)
+    embedder_function = get_embedder('hadamard')
+
+    logit_net_paths = []
+    for i in range(n_retrains):
+        model_path = os.path.join(
+            RESOURCES_DIRECTORY, 'predictive_model', method, str(i), 'word2vec_model.pickle',
+        )
         if not output_directory:
-            lg_path = os.path.join(RESOURCES_DIRECTORY,'predictive_model',method,str(i),'logistic_regression.joblib')
+            logit_net_path = os.path.join(
+                RESOURCES_DIRECTORY, 'predictive_model', method, str(i), 'logistic_regression.joblib',
+            )
         else:
-            lg_path = os.path.join(output_directory,method,str(i),'logistic_regression.joblib')
-        model = pickle.load(open(model_path,'rb'))
+            logit_net_path = os.path.join(output_directory, method, str(i), 'logistic_regression.joblib')
+
+        with open(model_path, 'rb') as file:
+            model = pickle.load(file)
+
         all_train_vectors = embedder_function(model, all_train_data[0])
         all_train_labels = all_train_data[1]
-        lg = train_logistic_regression(all_train_vectors, all_train_labels)
-        with open(lg_path, 'wb') as file:
-            joblib.dump(lg, file)
-        lg_path_list.append(lg_path)
-    return lg_path_list
+        logit_net: LogitNet = train_logistic_regression(all_train_vectors, all_train_labels)
+        with open(logit_net_path, 'wb') as file:
+            joblib.dump(logit_net, file)
+        logit_net_paths.append(logit_net_path)
+
+    return logit_net_paths
+
 
 def predict(
-        *
-        method:str,
-        compound_IDs:[str],
-        disease_IDs:[str],
-        lg_path_list:str,
-        output_directory:str,
+    *
+    method: str,
+    compound_ids: List[str],
+    disease_ids: List[str],
+    lg_path_list: List[str],
+    output_directory: str,
+    n_models: int = 10,
 ):
-    results = {}
-    for i in range(0,10):
-        model_path = os.path.join(RESOURCES_DIRECTORY,'predictive_model',method,str(i),'word2vec_model.pickle')
-        embedder_function = EMBEDDERS['hardamard']
-        model = pickle.load(open(model_path,'rb'))
+    embedder_function = get_embedder('hadamard')
 
-        for disease_id in disease_IDs:
-            for compound_id in compound_IDs:
-                dc = [f'Disease::{disease_id}',f'Compound::{compound_id}']
-                edge_embedding = embedder_function(model,dc)
-                lg=joblib.load(lg_path_list[i])
-                pre = lg.preict(edge_embedding)
-                if edge_embedding not in results:
-                    results[f'Disease::{disease_id}, Compound::{compound_id}'] = [pre]
-                else:
-                    results[f'Disease::{disease_id}, Compound::{compound_id}'].append(pre)
+    results = defaultdict(list)
+    for i in range(n_models):
+        model_path = os.path.join(RESOURCES_DIRECTORY, 'predictive_model', method, str(i), 'word2vec_model.pickle')
+        with open(model_path, 'rb') as file:
+            model = pickle.load(file)
+
+        for disease_id, compound_id in itt.product(disease_ids, compound_ids):
+            dc = [f'Disease::{disease_id}', f'Compound::{compound_id}']
+            edge_embedding = embedder_function(model, dc)
+            logistic_regression = joblib.load(lg_path_list[i])
+            pre = logistic_regression.preict(edge_embedding)
+            results[f'Disease::{disease_id}, Compound::{compound_id}'].append(pre)
+
     with open(os.path.join(output_directory, 'results.json')) as file:
-        json.dump(results,file)
+        json.dump(results, file)
 
-    return results
-
-
-
-
-
-
-
-
-
+    return dict(results)

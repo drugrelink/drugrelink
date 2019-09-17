@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 
+"""Embedders for node2vec."""
+
 from functools import partial
-from typing import Iterable, List, Mapping, Tuple, Type
+from typing import Iterable, List, Mapping, Optional, Tuple, Type
 
 import gensim
-import node2vec.edges
+from node2vec.edges import AverageEmbedder, EdgeEmbedder, HadamardEmbedder, WeightedL1Embedder, WeightedL2Embedder
 
 from .typing import EmbedderFunction
 
@@ -14,13 +16,14 @@ __all__ = [
     'weighted_l1',
     'weighted_l2',
     'EMBEDDERS',
+    'get_embedder',
 ]
 
 
 def embed(
     word2vec_model: gensim.models.Word2Vec,
     edges: Iterable[Tuple[str, str]],
-    edge_embedder_cls: Type[node2vec.edges.EdgeEmbedder],
+    edge_embedder_cls: Type[EdgeEmbedder],
 ) -> List[List[float]]:
     """
 
@@ -36,10 +39,10 @@ def embed(
     ]
 
 
-hadamard = partial(embed, edge_embedder_cls=node2vec.edges.HadamardEmbedder)
-average = partial(embed, edge_embedder_cls=node2vec.edges.AverageEmbedder)
-weighted_l1 = partial(embed, edge_embedder_cls=node2vec.edges.WeightedL1Embedder)
-weighted_l2 = partial(embed, edge_embedder_cls=node2vec.edges.WeightedL2Embedder)
+hadamard = partial(embed, edge_embedder_cls=HadamardEmbedder)
+average = partial(embed, edge_embedder_cls=AverageEmbedder)
+weighted_l1 = partial(embed, edge_embedder_cls=WeightedL1Embedder)
+weighted_l2 = partial(embed, edge_embedder_cls=WeightedL2Embedder)
 
 EMBEDDERS: Mapping[str, EmbedderFunction] = {
     'hadamard': hadamard,
@@ -47,3 +50,8 @@ EMBEDDERS: Mapping[str, EmbedderFunction] = {
     'weighted_l1': weighted_l1,
     'weighted_l2': weighted_l2,
 }
+
+
+def get_embedder(name: Optional[str] = None) -> EmbedderFunction:
+    """Get the embedder."""
+    return EMBEDDERS.get(name, hadamard)

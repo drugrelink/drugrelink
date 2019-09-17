@@ -1,23 +1,32 @@
 # -*- coding: utf-8 -*-
+
+from typing import List, Tuple
+
 import numpy as np
-from glmnet import logistic
+from glmnet.logistic import LogitNet
 from sklearn.metrics import roc_auc_score
 
 
-def train_logistic_regression(x, y) -> logistic.LogitNet:
-    logistic_regression = lg = logistic.LogitNet(alpha=0.2, n_lambda=150, min_lambda_ratio=1e-8, n_jobs=10,
-                                                 random_state=2)
-    logistic_regression.fit(x, y)
-    return logistic_regression
+def train_logistic_regression(x, y) -> LogitNet:
+    logit_net = LogitNet(
+        alpha=0.2,
+        n_lambda=150,
+        min_lambda_ratio=1e-8,
+        n_jobs=10,
+        random_state=2,
+    )
+    logit_net.fit(x, y)
+    return logit_net
 
 
-def validate(logistic_regression: logistic.LogitNet, x, y) -> float:
+def validate(logit_net: LogitNet, x, y) -> Tuple[float, List[float], List[int]]:
     x = np.array(x)
-    scores = logistic_regression.predict_proba(x)
-    label = logistic_regression.predict(x)
-    y_score = []
-    for i in scores:
-        y_score.append(i[1])
-    roc = roc_auc_score(y, y_score)
+    y_pred_probab = logit_net.predict_proba(x)
+    y_pred_labels = logit_net.predict(x)
+    predicted_edge_probabilities = [
+        score[1]
+        for score in y_pred_probab
+    ]
+    roc = roc_auc_score(y, predicted_edge_probabilities)
 
-    return roc, scores, label
+    return roc, y_pred_probab, y_pred_labels

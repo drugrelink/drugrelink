@@ -45,6 +45,19 @@ class Predictor:
             embeddings=embeddings,
         )
 
+    def get_edge_probability(self, source_id: str, target_id: str) -> float:
+        """Get the probability of the edge between the two nodes."""
+        edge_embedding = self.get_edge_embedding(source_id, target_id)
+        return self._predict_helper([edge_embedding.tolist()])[0]
+
+    def get_edge_embedding(self, source_id: str, target_id: str) -> np.ndarray:
+        """Get the embedding of the edge between the two nodes."""
+        return self.embeddings[source_id] * self.embeddings[target_id]
+
+    def _predict_helper(self, edge_embedding):
+        # FIXME is this a 0 or a 1?!?!
+        return self.model.predict_proba(edge_embedding)[:, 0]
+
     def get_top_diseases(self, drug: str, k: int = 30):
         """Get the top diseases for the given drug.
 
