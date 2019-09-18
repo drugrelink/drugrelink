@@ -15,6 +15,7 @@ import click
 import joblib
 import numpy as np
 import pandas as pd
+import rdkit
 from gensim.models import Word2Vec
 from sklearn.linear_model import LogisticRegression
 from tqdm import tqdm

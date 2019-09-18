@@ -32,7 +32,7 @@ predictor = Predictor.from_paths(
 @click.command()
 @click.option('-c', '--chemical-id', type=str)
 @click.option('-d', '--disease-id', type=str)
-@click.option('-m', '--method', typte=click.Choice(['node2vec', 'edge2vec']), default='node2vec')
+@click.option('-m', '--method', type=click.Choice(['node2vec', 'edge2vec']), default='node2vec')
 def main(chemical_id, disease_id, method):
     """Predict diseases for the given chemical.
 
