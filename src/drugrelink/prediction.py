@@ -19,6 +19,7 @@ import rdkit
 from gensim.models import Word2Vec
 from sklearn.linear_model import LogisticRegression
 from tqdm import tqdm
+from .pairs import test_pairs
 
 from .download import get_data_paths
 
@@ -40,6 +41,10 @@ names_list = nodes_df['name'].tolist()
 nodes_dict = dict(zip(nodes_list, names_list))
 drugbank_url = 'https://raw.githubusercontent.com/dhimmel/drugbank/gh-pages/data/drugbank.tsv'
 
+disease_modifying, clinical_trials, drug_central, symptomatic =test_pairs(
+        validation_path=data_paths.validate_data_path,
+        symptomatic_path=data_paths.symptomatic_data_path,
+        train_path=data_paths.transformed_features_path,)
 
 class BasePredictor:
     """Functions shared by all predictors."""
@@ -213,7 +218,7 @@ class Predictor(BasePredictor):
         return [
             target_id
             for target_id in self._get_target_ids_by_prefix(prefix)
-            if source_id != target_id
+            if source_id != target_id and [source_id,target_id] not in disease_modifying[0]
         ]
 
     def get_untrained_embedding(self, inchi: str, k: Optional[int] = None) -> PredictionMapping:
