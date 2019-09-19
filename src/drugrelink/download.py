@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 HERE = os.path.abspath(os.path.dirname(__file__))
 
 DEFAULT_DIRECTORY = os.path.abspath(os.path.join(HERE, os.pardir, os.pardir, 'data'))
-DIRECTORY = os.environ.get('REPOSITIONING_COMPARISON_DIRECTORY', DEFAULT_DIRECTORY)
+DATA_DIRECTORY = os.environ.get('REPOSITIONING_COMPARISON_DIRECTORY', DEFAULT_DIRECTORY)
 
 # URLs from dhimmel/integrate
 
@@ -52,7 +52,7 @@ class DataPaths:
 def get_data_paths(directory: Optional[str] = None) -> DataPaths:
     """Ensure Himmelstein's data files are downloaded."""
     if directory is None:
-        directory = DIRECTORY
+        directory = DATA_DIRECTORY
 
     os.makedirs(directory, exist_ok=True)
 
