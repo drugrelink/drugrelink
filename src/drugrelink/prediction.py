@@ -19,7 +19,7 @@ import rdkit
 from gensim.models import Word2Vec
 from sklearn.linear_model import LogisticRegression
 from tqdm import tqdm
-from .pairs import test_pairs
+from .pairs import test_pairs,data_non_overlap
 
 from .download import get_data_paths
 
@@ -40,12 +40,13 @@ nodes_list = nodes_df['id'].tolist()
 names_list = nodes_df['name'].tolist()
 nodes_dict = dict(zip(nodes_list, names_list))
 drugbank_url = 'https://raw.githubusercontent.com/dhimmel/drugbank/gh-pages/data/drugbank.tsv'
-
-disease_modifying, clinical_trials, drug_central, symptomatic =test_pairs(
+df = data_non_overlap(
         validation_path=data_paths.validate_data_path,
         symptomatic_path=data_paths.symptomatic_data_path,
-        train_path=data_paths.transformed_features_path,)
+        train_path=data_paths.transformed_features_path,
+    )
 
+print(df.head())
 class BasePredictor:
     """Functions shared by all predictors."""
 
@@ -215,16 +216,23 @@ class Predictor(BasePredictor):
         ]
 
     def _get_target_ids(self, source_id, prefix):
-        return [
-            target_id
-            for target_id in self._get_target_ids_by_prefix(prefix)
-            if source_id != target_id and [source_id,target_id] not in disease_modifying[0]
-        ]
+        if prefix == 'Compound::':
+            return [
+                target_id
+                for target_id in self._get_target_ids_by_prefix(prefix)
+                if source_id != target_id and df.loc[(df['compound'].values == target_id) & (df['disease'].values==source_id)]['label'].values == 0
+            ]
+        elif prefix == 'Disease::':
+            return [
+                target_id
+                for target_id in self._get_target_ids_by_prefix(prefix)
+                if source_id != target_id and df.loc[(df['compound'].values ==source_id) & (df['disease'].values==target_id)]['label'].values == 0
+            ]
 
     def get_untrained_embedding(self, inchi: str, k: Optional[int] = None) -> PredictionMapping:
         similarities = self._get_chemical_similarities(inchi, k=k)
         embedding = self._get_untrained_embedding(similarities)
-        target_ids = self._get_target_ids_by_prefix('Chemical::')
+        target_ids = self._get_target_ids_by_prefix('Chemicall::')
         return self._get_predictions_from_embedding(embedding, target_ids)
 
     def _get_chemical_similarities(self, inchi: str, k: Optional[int] = None) -> Mapping[str, float]:

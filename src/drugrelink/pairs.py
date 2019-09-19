@@ -5,7 +5,8 @@ import os
 
 import pandas as pd
 from .download import DATA_DIRECTORY
-
+from .embedders import get_embedder
+from node2vec.edges import HadamardEmbedder
 
 def test_pairs(
         *,
@@ -103,3 +104,14 @@ def data_non_overlap(
         pd.DataFrame.to_csv(data_df, output_directory)
 
     return data_df
+
+
+def pairs_vectors(df,word2vec):
+    vectors=[]
+    for _,row in df[['compound','disease']].iterrows():
+        c=row['compound']
+        d=row['disease']
+        edges_embs = HadamardEmbedder(keyed_vectors=word2vec.wv)
+        vector = edges_embs[(c,d)]
+        vectors.append(vector)
+    return vectors

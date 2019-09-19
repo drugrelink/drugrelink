@@ -23,7 +23,7 @@ from .download import get_data_paths
 from .embedders import get_embedder
 from .graph_edge2vec import prepare_edge2vec
 from .node2vec_utils import fit_node2vec
-from .pairs import test_pairs, train_pairs
+from .pairs import test_pairs, data_non_overlap,pairs_vectors
 from .permutation_convert import convert
 from .subgraph import generate_subgraph
 from .train import train_logistic_regression, validate
@@ -606,14 +606,12 @@ def retrain(
     n_retrains: int = 10,
 ) -> List[str]:
     data_paths = get_data_paths(directory=input_directory)
-    disease_modifying, clinical_trials, drug_central, symptomatic = test_pairs(
+    dataset = data_non_overlap(
         validation_path=data_paths.validate_data_path,
         symptomatic_path=data_paths.symptomatic_data_path,
         train_path=data_paths.transformed_features_path,
     )
-    all_train_data = np.concatenate(disease_modifying, clinical_trials, drug_central, symptomatic)
-    embedder_function = get_embedder('hadamard')
-
+    train_labels = dataset[['label']]
     logit_net_paths = []
     for i in range(n_retrains):
         model_path = os.path.join(
@@ -629,9 +627,8 @@ def retrain(
         with open(model_path, 'rb') as file:
             model = pickle.load(file)
 
-        all_train_vectors = embedder_function(model, all_train_data[0])
-        all_train_labels = all_train_data[1]
-        logit_net: LogitNet = train_logistic_regression(all_train_vectors, all_train_labels)
+        train_vectors = pairs_vectors(dataset,model)
+        logit_net: LogitNet = train_logistic_regression(train_vectors,train_labels)
         with open(logit_net_path, 'wb') as file:
             joblib.dump(logit_net, file)
         logit_net_paths.append(logit_net_path)
