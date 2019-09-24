@@ -46,7 +46,7 @@ df = data_non_overlap(
         train_path=data_paths.transformed_features_path,
     )
 
-print(df.head())
+
 class BasePredictor:
     """Functions shared by all predictors."""
 
