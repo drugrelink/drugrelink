@@ -19,7 +19,7 @@ import rdkit
 from gensim.models import Word2Vec
 from sklearn.linear_model import LogisticRegression
 from tqdm import tqdm
-from .pairs import test_pairs,data_non_overlap
+from .pairs import train_test_pairs,data_non_overlap
 
 from .download import get_data_paths
 

@@ -8,26 +8,40 @@ from .download import DATA_DIRECTORY
 from .embedders import get_embedder
 from node2vec.edges import HadamardEmbedder
 
-def test_pairs(
+
+def train_test_pairs(
         *,
         validation_path,
         train_path,
         symptomatic_path,
-):
-    """"""
+) -> [tuple]:
+    """
+    This function is to generate training and testing drug-disease pairs and respective labels.
+    :param validation_path: path for validation-statuses.tsv
+    :param train_path: path for transformed-features.tsv.bz2
+    :param symptomatic_path: path for probabilities.tsv
+    :return: lists of traning and testing pairs with labels
+    """
     df_validate = pd.read_csv(validation_path, sep='\t')
     df_symptomatic = pd.read_csv(symptomatic_path, sep='\t')
-    f = bz2.BZ2File(train_path, 'r')
-    df_features = pd.read_csv(f, sep='\t', low_memory=False)
-    disease_modifying = []
+    f_feature = bz2.BZ2File(train_path, 'r')
+    df_features = pd.read_csv(f_feature, sep='\t', low_memory=False)
+
+    disease_modifying_training = []
     clinical_trials = []
     drug_central = []
+    symptomatic_raw = []
+    disease_modifying_raw = []
+    non_status_raw = []
+    symptomatic_for_DM = []
+    disease_modifying_testing =[]
     symptomatic = []
+
     for _, row in df_features[['compound_id', 'disease_id', 'status']].iterrows():
         compound = 'Compound::' + row['compound_id']
         disease = 'Disease::' + row['disease_id']
         status = row['status']
-        disease_modifying.append(tuple((
+        disease_modifying_training.append(tuple((
             compound,
             disease,
             status
@@ -37,7 +51,6 @@ def test_pairs(
         compound = 'Compound::' + row['compound_id']
         disease = 'Disease::' + row['disease_id']
         status = row['status_trials']
-        t = tuple()
         clinical_trials.append(tuple((
             compound,
             disease,
@@ -55,19 +68,33 @@ def test_pairs(
         compound = 'Compound::' + row['compound_id']
         disease = 'Disease::' + row['disease_id']
         if row['category'] == 'SYM':
-            symptomatic.append(tuple((
+            symptomatic_raw.append(tuple((
                 compound,
                 disease,
                 1
             )))
-        elif row['category'] != 'DM':
-            symptomatic.append(tuple((
+            symptomatic_for_DM.append(tuple((
                 compound,
                 disease,
                 0
             )))
-    return disease_modifying, clinical_trials, drug_central, symptomatic
+        elif row['category'] == 'DM':
+            disease_modifying_raw.append(tuple((
+                compound,
+                disease,
+                1
+            )))
+        else:
+            non_status_raw.append(tuple((
+                compound,
+                disease,
+                0
+            ))
 
+            )
+            symptomatic = symptomatic_raw + non_status_raw
+            disease_modifying_testing = disease_modifying_raw + symptomatic_for_DM + non_status_raw
+    return disease_modifying_training, disease_modifying_testing, clinical_trials, drug_central, symptomatic
 
 def data_non_overlap(
         *,
@@ -77,12 +104,12 @@ def data_non_overlap(
         output_directory: str = None
 ):
     """
-    Return a df of data with non overlap.
+    Generate a df of data with non overlap.
     :param validation_path:
     :param train_path:
     :param symptomatic_path:
     :param output_directory:
-    :return:
+    :return: a dataframe of all drug-disease pairs with non-overlap.
     """
     if not output_directory:
         output_directory = os.path.join(DATA_DIRECTORY, 'data_non_overlap')
@@ -93,7 +120,7 @@ def data_non_overlap(
         data_df = pd.read_csv(output_directory, sep=',')
     else:
 
-        disease_modifying, clinical_trials, drug_central, symptomatic = test_pairs(validation_path=validation_path,
+        _, disease_modifying, clinical_trials, drug_central, symptomatic = train_test_pairs(validation_path=validation_path,
                                                                                    train_path=train_path,
                                                                                    symptomatic_path=symptomatic_path)
         rows = disease_modifying + clinical_trials + drug_central + symptomatic
@@ -107,6 +134,12 @@ def data_non_overlap(
 
 
 def pairs_vectors(df,word2vec):
+    """
+    Generate vectors for drug-disease pairs
+    :param df: a dataframe of drug-disease pairs
+    :param word2vec: trained word2vec model
+    :return: list of vectors
+    """
     vectors=[]
     for _,row in df[['compound','disease']].iterrows():
         c=row['compound']
