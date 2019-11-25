@@ -37,6 +37,7 @@ def main(config: TextIO, debug: bool):
     # Choose the appropriate function then pass the rest of the configuration there
     # using the splat operator
     if config.get('retrain'):
+        config.pop('retrain')
         return retrain(**config)
 
     elif config.get('predict'):

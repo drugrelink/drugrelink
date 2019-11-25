@@ -14,6 +14,7 @@ from typing import List, Optional
 import click
 import joblib
 import numpy as np
+import pandas as pd
 from edge2vec import calculate_edge_transition_matrix, read_graph, train
 from glmnet.logistic import LogitNet
 
@@ -23,7 +24,7 @@ from .download import get_data_paths
 from .embedders import get_embedder
 from .graph_edge2vec import prepare_edge2vec
 from .node2vec_utils import fit_node2vec
-from .pairs import test_pairs, data_non_overlap,pairs_vectors
+from .pairs import train_test_pairs, data_non_overlap, pairs_vectors
 from .permutation_convert import convert
 from .subgraph import generate_subgraph
 from .train import train_logistic_regression, validate
@@ -114,10 +115,10 @@ def run_node2vec_graph(
         )
         model.save(os.path.join(sub_output_directory, 'word2vec_model.pickle'))
         embedder_function = get_embedder(embedder)
-        train_list, train_labels = train_pairs(data_paths.transformed_features_path)
+        train_list, train_labels = (data_paths.transformed_features_path)
         #  TODO why build multiple embedders separately and not single one then split vectors after the fact?
         train_vectors = embedder_function(model, train_list)
-        disease_modifying, clinical_trials, drug_central, symptomatic = test_pairs(
+        _, disease_modifying, clinical_trials, drug_central, symptomatic = train_test_pairs(
             validation_path=data_paths.validate_data_path,
             symptomatic_path=data_paths.symptomatic_data_path,
             train_path=data_paths.transformed_features_path,
@@ -592,7 +593,7 @@ def run_edge2vec_subgraph(
 
 
 def retrain(
-    *
+    *,
     method: str,
     input_directory: str = None,
     output_directory: str = None,
@@ -604,7 +605,10 @@ def retrain(
         symptomatic_path=data_paths.symptomatic_data_path,
         train_path=data_paths.transformed_features_path,
     )
-    train_labels = dataset[['label']]
+    pdata = dataset.loc[dataset['label']==1]
+    ndata = dataset.loc[dataset['label']==0].sample(n=len(pdata))
+    train_data = pd.concat([pdata, ndata])
+    train_labels = train_data[['label']]
     logit_net_paths = []
     for i in range(n_retrains):
         model_path = os.path.join(
@@ -620,7 +624,7 @@ def retrain(
         with open(model_path, 'rb') as file:
             model = pickle.load(file)
 
-        train_vectors = pairs_vectors(dataset,model)
+        train_vectors = pairs_vectors(train_data, model)
         logit_net: LogitNet = train_logistic_regression(train_vectors,train_labels)
         with open(logit_net_path, 'wb') as file:
             joblib.dump(logit_net, file)

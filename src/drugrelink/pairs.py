@@ -21,6 +21,11 @@ def train_test_pairs(
     :param train_path: path for transformed-features.tsv.bz2
     :param symptomatic_path: path for probabilities.tsv
     :return: lists of traning and testing pairs with labels
+            disease_modifying_training: training data for Rephetio
+            disease_modifying_testing: disease modify test data
+            clinical_trials: clinical_trials test data
+            drug_central: drug_central test data
+            symptomatic: symptomatic test data
     """
     df_validate = pd.read_csv(validation_path, sep='\t')
     df_symptomatic = pd.read_csv(symptomatic_path, sep='\t')
