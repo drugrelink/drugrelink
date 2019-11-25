@@ -1,5 +1,5 @@
-DrugReLink
-==========
+DrugReLink |build|
+==================
 DrugReLink is a tool that optimizes, trains, and evaluates predictive
 models for links in `Hetionet <https://het.io>`_ using different network
 representation learning methods to compare learned features versus the
@@ -28,3 +28,7 @@ Run on a subgraph of Hetionet with:
 
 .. [himmelstein2017] Himmelstein, D. S., *et al.* (2017). `Systematic integration of biomedical knowledge prioritizes
                      drugs for repurposing <https://doi.org/10.7554/eLife.26726>`_. ELife, 6.
+
+
+.. |build| image:: https://travis-ci.com/drugrelink/drugrelink.svg?branch=master
+    :target: https://travis-ci.com/drugrelink/drugrelink
