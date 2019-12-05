@@ -7,7 +7,7 @@ import pandas as pd
 from .download import DATA_DIRECTORY
 from .embedders import get_embedder
 from node2vec.edges import HadamardEmbedder
-
+import numpy as np
 
 def train_test_pairs(
         *,
@@ -63,7 +63,7 @@ def train_test_pairs(
         )))
         status = row['status_drugcentral']
 
-        clinical_trials.append(tuple((
+        drug_central.append(tuple((
             compound,
             disease,
             status
@@ -99,7 +99,7 @@ def train_test_pairs(
             )
             symptomatic = symptomatic_raw + non_status_raw
             disease_modifying_testing = disease_modifying_raw + symptomatic_for_DM + non_status_raw
-    return disease_modifying_training, disease_modifying_testing, clinical_trials, drug_central, symptomatic
+    return np.array(disease_modifying_training), np.array(disease_modifying_testing), np.array(clinical_trials), np.array(drug_central), np.array(symptomatic)
 
 def data_non_overlap(
         *,

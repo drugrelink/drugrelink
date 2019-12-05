@@ -115,22 +115,22 @@ def run_node2vec_graph(
         )
         model.save(os.path.join(sub_output_directory, 'word2vec_model.pickle'))
         embedder_function = get_embedder(embedder)
-        train_list, train_labels = (data_paths.transformed_features_path)
         #  TODO why build multiple embedders separately and not single one then split vectors after the fact?
-        train_vectors = embedder_function(model, train_list)
-        _, disease_modifying, clinical_trials, drug_central, symptomatic = train_test_pairs(
+        disease_modifying_training, disease_modifying, clinical_trials, drug_central, symptomatic = train_test_pairs(
             validation_path=data_paths.validate_data_path,
             symptomatic_path=data_paths.symptomatic_data_path,
             train_path=data_paths.transformed_features_path,
         )
-        test_dm_vectors = embedder_function(model, disease_modifying[0])
-        test_dm_labels = disease_modifying[1]
-        test_ct_vectors = embedder_function(model, clinical_trials[0])
-        test_ct_labels = clinical_trials[1]
-        test_dc_vectors = embedder_function(model, drug_central[0])
-        test_dc_labels = drug_central[1]
-        test_sy_vectors = embedder_function(model, symptomatic[0])
-        test_sy_labels = symptomatic[1]
+        train_vectors = embedder_function(model,disease_modifying_training[:,0:2])
+        train_labels = disease_modifying_training[:,2]
+        test_dm_vectors = embedder_function(model, disease_modifying[:,0:2])
+        test_dm_labels = disease_modifying[:,2]
+        test_ct_vectors = embedder_function(model, clinical_trials[:,0:2])
+        test_ct_labels = clinical_trials[:,2]
+        test_dc_vectors = embedder_function(model, drug_central[:,0:2])
+        test_dc_labels = drug_central[:,2]
+        test_sy_vectors = embedder_function(model, symptomatic[:,0:2])
+        test_sy_labels = symptomatic[:,2]
         _train_evaluate_generate_artifacts(
             sub_output_directory,
             train_vectors,
@@ -216,22 +216,21 @@ def run_edge2vec_graph(
             model.save(os.path.join(sub_output_directory, 'word2vec_model.pickle'))
             model.wv.save_word2vec_format(os.path.join(sub_output_directory, 'word2vec_wv'))
             embedder_function = get_embedder(embedder)
-            train_list, train_labels = train_pairs(data_paths.transformed_features_path)
-            #  TODO why build multiple embedders separately and not single one then split vectors after the fact?
-            train_vectors = embedder_function(model, train_list)
-            disease_modifying, clinical_trials, drug_central, symptomatic = test_pairs(
+            disease_modifying_training, disease_modifying, clinical_trials, drug_central, symptomatic = train_test_pairs(
                 validation_path=data_paths.validate_data_path,
                 symptomatic_path=data_paths.symptomatic_data_path,
                 train_path=data_paths.transformed_features_path,
             )
-            test_dm_vectors = embedder_function(model, disease_modifying[0])
-            test_dm_labels = disease_modifying[1]
-            test_ct_vectors = embedder_function(model, clinical_trials[0])
-            test_ct_labels = clinical_trials[1]
-            test_dc_vectors = embedder_function(model, drug_central[0])
-            test_dc_labels = drug_central[1]
-            test_sy_vectors = embedder_function(model, symptomatic[0])
-            test_sy_labels = symptomatic[1]
+            train_vectors = embedder_function(model,disease_modifying_training[:,0:2])
+            train_labels = disease_modifying_training[:,2].tolist()
+            test_dm_vectors = embedder_function(model, disease_modifying[:,0:2])
+            test_dm_labels = disease_modifying[:,2].tolist()
+            test_ct_vectors = embedder_function(model, clinical_trials[:,0:2])
+            test_ct_labels = clinical_trials[:,2].tolist()
+            test_dc_vectors = embedder_function(model, drug_central[:,0:2])
+            test_dc_labels = drug_central[:,2].tolist()
+            test_sy_vectors = embedder_function(model, symptomatic[:,0:2])
+            test_sy_labels = symptomatic[:,2].tolist()
             _train_evaluate_generate_artifacts(
                 sub_output_directory,
                 train_vectors,
@@ -651,7 +650,7 @@ def predict(
             model = pickle.load(file)
 
         for disease_id, compound_id in itt.product(disease_ids, compound_ids):
-            dc = [f'Disease::{disease_id}', f'Compound::{compound_id}']
+            dc = [(f'Disease::{disease_id}', f'Compound::{compound_id}')]
             edge_embedding = embedder_function(model, dc)
             logistic_regression = joblib.load(lg_path_list[i])
             pre = logistic_regression.preict(edge_embedding)

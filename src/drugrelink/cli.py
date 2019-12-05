@@ -44,6 +44,7 @@ def main(config: TextIO, debug: bool):
         return predict(**config)
 
     elif method == 'node2vec':
+        config.pop('method')
         if graph_type == 'graph':
             return run_node2vec_graph(**config)
         elif graph_type == 'subgraph':
@@ -55,6 +56,7 @@ def main(config: TextIO, debug: bool):
             return sys.exit(1)
 
     elif method == 'edge2vec':
+        config.pop('method')
         if graph_type == 'graph':
             return run_edge2vec_graph(**config)
         elif graph_type == 'subgraph':
