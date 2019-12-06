@@ -31,7 +31,7 @@ PERMUTATION_DATA_URL_FMT = 'https://raw.githubusercontent.com/dhimmel/integrate/
 
 # URLs from dhimmel/learn
 
-TRANSFORMED_FEATURES_URL = 'https://raw.githubusercontent.com/dhimmel/learn/master/prediction/features/transformed-features.tsv.bz2?raw=true'
+TRANSFORMED_FEATURES_URL = 'https://github.com/dhimmel/learn/blob/master/prediction/features/features.tsv.bz2?raw=true'
 VALIDATE_DATA_URL = 'https://raw.githubusercontent.com/dhimmel/learn/master/validate/validation-statuses.tsv'
 SYMPTOMATIC_DATA_URL = 'https://raw.githubusercontent.com/dhimmel/learn/master/prediction/predictions/probabilities.tsv'
 

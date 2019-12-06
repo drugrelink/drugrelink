@@ -9,6 +9,7 @@ from .embedders import get_embedder
 from node2vec.edges import HadamardEmbedder
 import numpy as np
 
+
 def train_test_pairs(
         *,
         validation_path,
@@ -39,7 +40,7 @@ def train_test_pairs(
     disease_modifying_raw = []
     non_status_raw = []
     symptomatic_for_DM = []
-    disease_modifying_testing =[]
+    disease_modifying_testing = []
     symptomatic = []
 
     for _, row in df_features[['compound_id', 'disease_id', 'status']].iterrows():
@@ -99,7 +100,9 @@ def train_test_pairs(
             )
             symptomatic = symptomatic_raw + non_status_raw
             disease_modifying_testing = disease_modifying_raw + symptomatic_for_DM + non_status_raw
-    return np.array(disease_modifying_training), np.array(disease_modifying_testing), np.array(clinical_trials), np.array(drug_central), np.array(symptomatic)
+    return np.array(disease_modifying_training), np.array(disease_modifying_testing), np.array(
+        clinical_trials), np.array(drug_central), np.array(symptomatic)
+
 
 def data_non_overlap(
         *,
@@ -125,9 +128,10 @@ def data_non_overlap(
         data_df = pd.read_csv(output_directory, sep=',')
     else:
 
-        _, disease_modifying, clinical_trials, drug_central, symptomatic = train_test_pairs(validation_path=validation_path,
-                                                                                   train_path=train_path,
-                                                                                   symptomatic_path=symptomatic_path)
+        _, disease_modifying, clinical_trials, drug_central, symptomatic = train_test_pairs(
+            validation_path=validation_path,
+            train_path=train_path,
+            symptomatic_path=symptomatic_path)
         rows = disease_modifying.tolist() + clinical_trials.tolist() + drug_central.tolist() + symptomatic.tolist()
         data_df = pd.DataFrame(rows, columns=['compound', 'disease', 'label'])
         data_df.drop_duplicates(keep='first', inplace=True)
@@ -138,18 +142,18 @@ def data_non_overlap(
     return data_df
 
 
-def pairs_vectors(df,word2vec):
+def pairs_vectors(df, word2vec):
     """
     Generate vectors for drug-disease pairs
     :param df: a dataframe of drug-disease pairs
     :param word2vec: trained word2vec model
     :return: list of vectors
     """
-    vectors=[]
-    for _,row in df[['compound','disease']].iterrows():
-        c=row['compound']
-        d=row['disease']
+    vectors = []
+    for _, row in df[['compound', 'disease']].iterrows():
+        c = row['compound']
+        d = row['disease']
         edges_embs = HadamardEmbedder(keyed_vectors=word2vec.wv)
-        vector = edges_embs[(c,d)]
+        vector = edges_embs[(c, d)]
         vectors.append(vector)
     return vectors
