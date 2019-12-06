@@ -18,7 +18,7 @@ import pandas as pd
 from edge2vec import calculate_edge_transition_matrix, read_graph, train
 from glmnet.logistic import LogitNet
 
-from .constants import RESOURCES_DIRECTORY
+from .constants import RESOURCES_DIRECTORY, RESULTS_DIRECTORY
 from .create_graph import create_himmelstein_graph
 from .download import get_data_paths
 from .embedders import get_embedder
@@ -63,7 +63,7 @@ def run_node2vec_graph(
     """
     if output_directory is None:
         output_directory = os.path.join(RESOURCES_DIRECTORY,
-                                        datetime.now().strftime(f'node2vec_{embedder}_%Y%m%d_%H%M'))
+                                        datetime.now().strftime(f'node2vec_%Y%m%d_%H%M'))
         os.makedirs(output_directory, exist_ok=True)
 
     with open(os.path.join(output_directory, 'metadata.json'), 'w') as file:
@@ -163,13 +163,17 @@ def run_edge2vec_graph(
     em_iteration: int,
     max_count: int
 ) -> None:
+    if output_directory is None:
+        output_directory = os.path.join(RESOURCES_DIRECTORY,
+                                    datetime.now().strftime(f'edge2vec_%Y%m%d_%H%M'))
+        os.makedirs(output_directory, exist_ok=True)
+
     data_paths = get_data_paths(directory=input_directory)
     edge_path = data_paths.edge_data_path
     data_edge2vec_path = data_paths.data_edge2vec_path
     if not os.path.exists(data_edge2vec_path):
         prepare_edge2vec(edge_path, data_edge2vec_path)
     graph = read_graph(data_edge2vec_path)
-
     if repeat:
         data_paths = get_data_paths(directory=input_directory)
         dir_number = 0
@@ -178,7 +182,7 @@ def run_edge2vec_graph(
             if os.path.isdir(path):
                 dir_number += 1
         for i in range(dir_number + 1, repeat + 1):
-            transition_probabilities_path = os.path.join(output_directory, 'transition_probabilities.csv')
+            transition_probabilities_path = os.path.join(output_directory, 'transition_probabilities')
             if transition_probabilities_path is not None and os.path.exists(transition_probabilities_path):
                 with open(transition_probabilities_path, 'rb') as file:
                     transition_probabilities = np.load(file)
@@ -260,7 +264,7 @@ def run_node2vec_subgraph(
 ) -> None:
     if output_directory is None:
         output_directory = os.path.join(RESOURCES_DIRECTORY,
-                                        datetime.now().strftime(f'node2vec_{embedder}_%Y%m%d_%H%M'))
+                                        datetime.now().strftime(f'node2vec_%Y%m%d_%H%M'))
         os.makedirs(output_directory, exist_ok=True)
 
     # TODO re-write metadata export
@@ -287,7 +291,7 @@ def run_node2vec_subgraph(
             negative_list = pickle.load(file)
         with open(negative_labels_path, 'rb') as file:
             negative_labels = pickle.load(file)
-        logger.info('loaded pickled subgraph info')
+        click.echo('loaded pickled subgraph info')
 
     else:
         click.echo('creating graph')
@@ -349,7 +353,7 @@ def run_node2vec_subgraph(
         test_vectors,
         test_labels,
     )
-    logger.info(datetime.now())
+    click.echo(datetime.now())
 
 
 def _train_evaluate_generate_artifacts(
@@ -446,7 +450,7 @@ def _train_evaluate_generate_artifacts(
 
     with open(os.path.join(output_directory, 'validation.json'), 'w') as file:
         json.dump(roc_dict, file)
-
+    click.echo('Misson completed')
 
 def run_edge2vec_subgraph(
     *,
@@ -469,7 +473,7 @@ def run_edge2vec_subgraph(
 ) -> None:
     if output_directory is None:
         output_directory = os.path.join(RESOURCES_DIRECTORY,
-                                        datetime.now().strftime(f'edge2vec_{embedder}_%Y%m%d_%H%M'))
+                                        datetime.now().strftime(f'edge2vec_%Y%m%d_%H%M'))
         os.makedirs(output_directory, exist_ok=True)
 
     # TODO re-write metadata export
