@@ -23,7 +23,7 @@ CLI Usage
 Run on a subgraph of Hetionet with:
 - Download examples of configuration files from  ``/resources/config_examples/``
 - You can specify the output file path by adding "output_directory: path_of_output" to the configuration file.
-.. code-block:: sh
+.. code-block:: bash
 
     $ drugrelink path_of_the_config_file
 
