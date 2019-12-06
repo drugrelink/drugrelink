@@ -122,15 +122,15 @@ def run_node2vec_graph(
             train_path=data_paths.transformed_features_path,
         )
         train_vectors = embedder_function(model,disease_modifying_training[:,0:2])
-        train_labels = disease_modifying_training[:,2]
+        train_labels = disease_modifying_training[:,2].tolist()
         test_dm_vectors = embedder_function(model, disease_modifying[:,0:2])
-        test_dm_labels = disease_modifying[:,2]
+        test_dm_labels = disease_modifying[:,2].tolist()
         test_ct_vectors = embedder_function(model, clinical_trials[:,0:2])
-        test_ct_labels = clinical_trials[:,2]
+        test_ct_labels = clinical_trials[:,2].tolist()
         test_dc_vectors = embedder_function(model, drug_central[:,0:2])
-        test_dc_labels = drug_central[:,2]
+        test_dc_labels = drug_central[:,2].tolist()
         test_sy_vectors = embedder_function(model, symptomatic[:,0:2])
-        test_sy_labels = symptomatic[:,2]
+        test_sy_labels = symptomatic[:,2].tolist()
         _train_evaluate_generate_artifacts(
             sub_output_directory,
             train_vectors,
@@ -546,11 +546,11 @@ def run_edge2vec_subgraph(
             directed=directed,
             e_step=e_step,
             em_iteration=em_iteration,
-            number_walks=num_walks,
+            walk_epochs = num_walks,
             walk_length=walk_length,
             p=p,
             q=q,
-            max_count=max_count,
+            walk_sample_size = max_count,
         )
 
     if transition_probabilities_path is not None:

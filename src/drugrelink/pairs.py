@@ -110,9 +110,9 @@ def data_non_overlap(
 ):
     """
     Generate a df of data with non overlap.
-    :param validation_path:
-    :param train_path:
-    :param symptomatic_path:
+    :param validation_path: path for validation-statuses.tsv
+    :param train_path: path for transformed-features.tsv.bz2
+    :param symptomatic_path: path for probabilities.tsv
     :param output_directory:
     :return: a dataframe of all drug-disease pairs with non-overlap.
     """
@@ -128,7 +128,7 @@ def data_non_overlap(
         _, disease_modifying, clinical_trials, drug_central, symptomatic = train_test_pairs(validation_path=validation_path,
                                                                                    train_path=train_path,
                                                                                    symptomatic_path=symptomatic_path)
-        rows = disease_modifying + clinical_trials + drug_central + symptomatic
+        rows = disease_modifying.tolist() + clinical_trials.tolist() + drug_central.tolist() + symptomatic.tolist()
         data_df = pd.DataFrame(rows, columns=['compound', 'disease', 'label'])
         data_df.drop_duplicates(keep='first', inplace=True)
         data_df.sort_values(by='label')
