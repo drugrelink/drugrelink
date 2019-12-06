@@ -1,0 +1,12 @@
+{
+  "dimensions": 48,
+  "embedder": "hadamard",
+  "input_directory": null,
+  "num_walks": 1,
+  "output_directory": "/home/lxu/drugrelink/resources/node2vec_20191206_1643",
+  "p": 0.5,
+  "q": 2,
+  "repeat": 1,
+  "walk_length": 3,
+  "window": 10
+}

@@ -1,0 +1,11 @@
+ { "graph_type":"graph",
+   "method":"node2vec",
+   "embedder": "hadamard",
+   "dimensions": 48,
+   "num_walks": 1,
+   "walk_length": 3,
+   "window":10,
+   "repeat":1,
+   "p":0.5,
+   "q":2
+ }

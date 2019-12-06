@@ -1,0 +1,12 @@
+ { "graph_type":"subgraph",
+   "method":"edge2vec",
+   "embedder": "hadamard",
+   "dimensions": 48,
+   "num_walks": 1,
+   "walk_length": 3,
+   "window":10,
+   "p":0.5,
+   "q":2,
+   "e_step":1,
+   "em_iteration":1,
+   "max_count":100}
