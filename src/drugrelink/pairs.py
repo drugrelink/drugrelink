@@ -32,7 +32,7 @@ def train_test_pairs(
     df_symptomatic = pd.read_csv(symptomatic_path, sep='\t')
     f_feature = bz2.BZ2File(train_path, 'r')
     df_features = pd.read_csv(f_feature, sep='\t', low_memory=False)
-
+    df_train = df_features.loc[df_features['prior_prob '] > 0]
     disease_modifying_training = []
     clinical_trials = []
     drug_central = []
@@ -43,7 +43,7 @@ def train_test_pairs(
     disease_modifying_testing = []
     symptomatic = []
 
-    for _, row in df_features[['compound_id', 'disease_id', 'status']].iterrows():
+    for _, row in df_train[['compound_id', 'disease_id', 'status']].iterrows():
         compound = 'Compound::' + row['compound_id']
         disease = 'Disease::' + row['disease_id']
         status = row['status']
