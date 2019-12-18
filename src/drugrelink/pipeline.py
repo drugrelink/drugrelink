@@ -18,7 +18,7 @@ import pandas as pd
 from edge2vec import calculate_edge_transition_matrix, read_graph, train
 from glmnet.logistic import LogitNet
 
-from .constants import RESOURCES_DIRECTORY, RESULTS_DIRECTORY
+from .constants import RESOURCES_DIRECTORY, NOTEBOOK_DIRECTORY
 from .create_graph import create_himmelstein_graph
 from .download import get_data_paths
 from .embedders import get_embedder
@@ -33,18 +33,18 @@ logger = logging.getLogger(__name__)
 
 
 def run_node2vec_graph(
-    *,
-    dimensions: int,
-    walk_length: int,
-    num_walks: int,
-    window: int,
-    embedder: str = "hadamard",
-    permutation_number=None,
-    output_directory: Optional[str] = None,
-    input_directory: Optional[str] = None,
-    repeat: int = 1,
-    p: Optional[int] = None,
-    q: Optional[int] = None,
+        *,
+        dimensions: int,
+        walk_length: int,
+        num_walks: int,
+        window: int,
+        embedder: str = "hadamard",
+        permutation_number=None,
+        output_directory: Optional[str] = None,
+        input_directory: Optional[str] = None,
+        repeat: int = 1,
+        p: Optional[int] = None,
+        q: Optional[int] = None,
 ) -> None:
     """
     Run the node2vec pipeline
@@ -121,16 +121,16 @@ def run_node2vec_graph(
             symptomatic_path=data_paths.symptomatic_data_path,
             train_path=data_paths.transformed_features_path,
         )
-        train_vectors = embedder_function(model,disease_modifying_training[:,0:2])
-        train_labels = disease_modifying_training[:,2].tolist()
-        test_dm_vectors = embedder_function(model, disease_modifying[:,0:2])
-        test_dm_labels = disease_modifying[:,2].tolist()
-        test_ct_vectors = embedder_function(model, clinical_trials[:,0:2])
-        test_ct_labels = clinical_trials[:,2].tolist()
-        test_dc_vectors = embedder_function(model, drug_central[:,0:2])
-        test_dc_labels = drug_central[:,2].tolist()
-        test_sy_vectors = embedder_function(model, symptomatic[:,0:2])
-        test_sy_labels = symptomatic[:,2].tolist()
+        train_vectors = embedder_function(model, disease_modifying_training[:, 0:2])
+        train_labels = disease_modifying_training[:, 2].tolist()
+        test_dm_vectors = embedder_function(model, disease_modifying[:, 0:2])
+        test_dm_labels = disease_modifying[:, 2].tolist()
+        test_ct_vectors = embedder_function(model, clinical_trials[:, 0:2])
+        test_ct_labels = clinical_trials[:, 2].tolist()
+        test_dc_vectors = embedder_function(model, drug_central[:, 0:2])
+        test_dc_labels = drug_central[:, 2].tolist()
+        test_sy_vectors = embedder_function(model, symptomatic[:, 0:2])
+        test_sy_labels = symptomatic[:, 2].tolist()
         _train_evaluate_generate_artifacts(
             sub_output_directory,
             train_vectors,
@@ -147,25 +147,25 @@ def run_node2vec_graph(
 
 
 def run_edge2vec_graph(
-    *,
-    dimensions: int,
-    walk_length: int,
-    num_walks: int,
-    window: int,
-    embedder: str = "hadamard",
-    output_directory: Optional[str] = None,
-    input_directory: Optional[str] = None,
-    repeat: int = 1,
-    p: Optional[int] = None,
-    q: Optional[int] = None,
-    directed: bool = False,
-    e_step: int,
-    em_iteration: int,
-    max_count: int
+        *,
+        dimensions: int,
+        walk_length: int,
+        num_walks: int,
+        window: int,
+        embedder: str = "hadamard",
+        output_directory: Optional[str] = None,
+        input_directory: Optional[str] = None,
+        repeat: int = 1,
+        p: Optional[int] = None,
+        q: Optional[int] = None,
+        directed: bool = False,
+        e_step: int,
+        em_iteration: int,
+        max_count: int
 ) -> None:
     if output_directory is None:
         output_directory = os.path.join(RESOURCES_DIRECTORY,
-                                    datetime.now().strftime(f'edge2vec_%Y%m%d_%H%M'))
+                                        datetime.now().strftime(f'edge2vec_%Y%m%d_%H%M'))
         os.makedirs(output_directory, exist_ok=True)
 
     data_paths = get_data_paths(directory=input_directory)
@@ -225,16 +225,16 @@ def run_edge2vec_graph(
                 symptomatic_path=data_paths.symptomatic_data_path,
                 train_path=data_paths.transformed_features_path,
             )
-            train_vectors = embedder_function(model,disease_modifying_training[:,0:2])
-            train_labels = disease_modifying_training[:,2].tolist()
-            test_dm_vectors = embedder_function(model, disease_modifying[:,0:2])
-            test_dm_labels = disease_modifying[:,2].tolist()
-            test_ct_vectors = embedder_function(model, clinical_trials[:,0:2])
-            test_ct_labels = clinical_trials[:,2].tolist()
-            test_dc_vectors = embedder_function(model, drug_central[:,0:2])
-            test_dc_labels = drug_central[:,2].tolist()
-            test_sy_vectors = embedder_function(model, symptomatic[:,0:2])
-            test_sy_labels = symptomatic[:,2].tolist()
+            train_vectors = embedder_function(model, disease_modifying_training[:, 0:2])
+            train_labels = disease_modifying_training[:, 2].tolist()
+            test_dm_vectors = embedder_function(model, disease_modifying[:, 0:2])
+            test_dm_labels = disease_modifying[:, 2].tolist()
+            test_ct_vectors = embedder_function(model, clinical_trials[:, 0:2])
+            test_ct_labels = clinical_trials[:, 2].tolist()
+            test_dc_vectors = embedder_function(model, drug_central[:, 0:2])
+            test_dc_labels = drug_central[:, 2].tolist()
+            test_sy_vectors = embedder_function(model, symptomatic[:, 0:2])
+            test_sy_labels = symptomatic[:, 2].tolist()
             _train_evaluate_generate_artifacts(
                 sub_output_directory,
                 train_vectors,
@@ -252,15 +252,15 @@ def run_edge2vec_graph(
 
 
 def run_node2vec_subgraph(
-    *,
-    dimensions: int,
-    walk_length: int,
-    num_walks: int,
-    n_train_positive: int = 5,
-    n_train_negative: int = 15,
-    embedder: str = "hadamard",
-    output_directory: Optional[str] = None,
-    input_directory: Optional[str] = None,
+        *,
+        dimensions: int,
+        walk_length: int,
+        num_walks: int,
+        n_train_positive: int = 5,
+        n_train_negative: int = 15,
+        embedder: str = "hadamard",
+        output_directory: Optional[str] = None,
+        input_directory: Optional[str] = None,
 ) -> None:
     if output_directory is None:
         output_directory = os.path.join(RESOURCES_DIRECTORY,
@@ -357,17 +357,17 @@ def run_node2vec_subgraph(
 
 
 def _train_evaluate_generate_artifacts(
-    output_directory,
-    train_vectors,
-    train_labels,
-    test_dm_vectors,
-    test_dm_labels,
-    test_ct_vectors=None,
-    test_ct_labels=None,
-    test_dc_vectors=None,
-    test_dc_labels=None,
-    test_sy_vectors=None,
-    test_sy_labels=None,
+        output_directory,
+        train_vectors,
+        train_labels,
+        test_dm_vectors,
+        test_dm_labels,
+        test_ct_vectors=None,
+        test_ct_labels=None,
+        test_dc_vectors=None,
+        test_dc_labels=None,
+        test_sy_vectors=None,
+        test_sy_labels=None,
 ) -> None:
     if not test_ct_vectors:
         test_dict = {
@@ -452,23 +452,24 @@ def _train_evaluate_generate_artifacts(
         json.dump(roc_dict, file)
     click.echo('Misson completed')
 
+
 def run_edge2vec_subgraph(
-    *,
-    dimensions: int,
-    walk_length: int,
-    num_walks: int,
-    window: int,
-    embedder: str = "hadamard",
-    output_directory: Optional[str] = None,
-    input_directory: Optional[str] = None,
-    p: Optional[int] = None,
-    q: Optional[int] = None,
-    directed: bool = False,
-    e_step: int,
-    em_iteration: int,
-    max_count: int,
-    n_train_positive: int = 5,
-    n_train_negative: int = 15,
+        *,
+        dimensions: int,
+        walk_length: int,
+        num_walks: int,
+        window: int,
+        embedder: str = "hadamard",
+        output_directory: Optional[str] = None,
+        input_directory: Optional[str] = None,
+        p: Optional[int] = None,
+        q: Optional[int] = None,
+        directed: bool = False,
+        e_step: int,
+        em_iteration: int,
+        max_count: int,
+        n_train_positive: int = 5,
+        n_train_negative: int = 15,
 
 ) -> None:
     if output_directory is None:
@@ -550,11 +551,11 @@ def run_edge2vec_subgraph(
             directed=directed,
             e_step=e_step,
             em_iteration=em_iteration,
-            walk_epochs = num_walks,
+            walk_epochs=num_walks,
             walk_length=walk_length,
             p=p,
             q=q,
-            walk_sample_size = max_count,
+            walk_sample_size=max_count,
         )
 
     if transition_probabilities_path is not None:
@@ -595,12 +596,12 @@ def run_edge2vec_subgraph(
     )
 
 
-def retrain(
-    *,
-    method: str,
-    input_directory: str = None,
-    output_directory: str = None,
-    n_retrains: int = 10,
+def retrain_all(
+        *,
+        method: str,
+        input_directory: str = None,
+        output_directory: str = None,
+        n_retrains: int = 10,
 ) -> List[str]:
     data_paths = get_data_paths(directory=input_directory)
     dataset = data_non_overlap(
@@ -608,8 +609,8 @@ def retrain(
         symptomatic_path=data_paths.symptomatic_data_path,
         train_path=data_paths.transformed_features_path,
     )
-    pdata = dataset.loc[dataset['label']==1]
-    ndata = dataset.loc[dataset['label']==0].sample(n=len(pdata))
+    pdata = dataset.loc[dataset['label'] == 1]
+    ndata = dataset.loc[dataset['label'] == 0].sample(n=len(pdata))
     train_data = pd.concat([pdata, ndata])
     train_labels = train_data[['label']]
     logit_net_paths = []
@@ -628,7 +629,7 @@ def retrain(
             model = pickle.load(file)
 
         train_vectors = pairs_vectors(train_data, model)
-        logit_net: LogitNet = train_logistic_regression(train_vectors,train_labels)
+        logit_net: LogitNet = train_logistic_regression(train_vectors, train_labels)
         with open(logit_net_path, 'wb') as file:
             joblib.dump(logit_net, file)
         logit_net_paths.append(logit_net_path)
@@ -636,14 +637,61 @@ def retrain(
     return logit_net_paths
 
 
+def retrain(
+        *,
+        output_directory: str,
+        input_directory: str = None
+):
+    for i, name in enumerate(os.listdir(output_directory), start=1):
+        if name in ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']:
+            subpath = os.path.join(output_directory, name)
+            data_paths = get_data_paths(directory=input_directory)
+            embedder_function = get_embedder('hadamard')
+            disease_modifying_training, disease_modifying, clinical_trials, drug_central, symptomatic = train_test_pairs(
+                validation_path=data_paths.validate_data_path,
+                symptomatic_path=data_paths.symptomatic_data_path,
+                train_path=data_paths.transformed_features_path,
+            )
+            wv_path = os.path.join(subpath, 'word2vec_model.pickle')
+            with open(wv_path, 'rb') as f:
+                wv = pickle.load(f)
+            model = wv
+            train_vectors = embedder_function(model, disease_modifying_training[:, 0:2])
+            train_labels = disease_modifying_training[:, 2].tolist()
+            test_dm_vectors = embedder_function(model, disease_modifying[:, 0:2])
+            test_dm_labels = disease_modifying[:, 2].tolist()
+            test_ct_vectors = embedder_function(model, clinical_trials[:, 0:2])
+            test_ct_labels = clinical_trials[:, 2].tolist()
+            test_dc_vectors = embedder_function(model, drug_central[:, 0:2])
+            test_dc_labels = drug_central[:, 2].tolist()
+            test_sy_vectors = embedder_function(model, symptomatic[:, 0:2])
+            test_sy_labels = symptomatic[:, 2].tolist()
+            _train_evaluate_generate_artifacts(
+                subpath,
+                train_vectors,
+                train_labels,
+                test_dm_vectors,
+                test_dm_labels,
+                test_ct_vectors,
+                test_ct_labels,
+                test_dc_vectors,
+                test_dc_labels,
+                test_sy_vectors,
+                test_sy_labels,
+            )
+            with open(os.path.join(subpath,'validation_fair.json'),'w') as file:
+
+    logger.info(datetime.now())
+
+
 def predict(
-    *
-    method: str,
-    compound_ids: List[str],
-    disease_ids: List[str],
-    lg_path_list: List[str],
-    output_directory: str,
-    n_models: int = 10,
+        *,
+        method: str,
+        compound_ids: List[str],
+        disease_ids: List[str],
+        lg_path_list: List[str],
+        output_directory: str,
+        n_models: int = 10,
 ):
     embedder_function = get_embedder('hadamard')
 

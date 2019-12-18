@@ -4,7 +4,7 @@ from typing import List, Tuple
 
 import numpy as np
 from glmnet.logistic import LogitNet
-from sklearn.metrics import roc_auc_score
+from sklearn.metrics import roc_auc_score, average_precision_score
 
 
 def train_logistic_regression(x, y) -> LogitNet:
