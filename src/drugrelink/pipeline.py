@@ -362,6 +362,10 @@ def _train_evaluate_generate_artifacts(
         train_labels,
         test_dm_vectors,
         test_dm_labels,
+        repurpose_vectors,
+        repurpose_labels,
+        repo_vectors,
+        repo_labels,
         test_ct_vectors=None,
         test_ct_labels=None,
         test_dc_vectors=None,
@@ -405,11 +409,30 @@ def _train_evaluate_generate_artifacts(
 
     logger.info('validating logistic regression classifier')
     if not test_ct_vectors:
-        roc, y_pro, y_labels = validate(logit_net, test_dm_vectors, test_dm_labels)
-        y_pro = list(map(list, y_pro))
+        roc_test, y_pro_test, y_labels_test, aupr_test = validate(logit_net, test_dm_vectors, test_dm_labels)
+        roc_repurpose, y_pro_repurpose, y_labels_repurpose, aupr_repurpose = validate(logit_net, repurpose_vectors, repurpose_labels)
+        roc_repo, y_pro_repo, y_labels_repo, aupr_repo = validate(logit_net, repo_vectors, repo_labels)
+        y_pro = list(map(list, y_pro_test))
         roc_dict = {
-            'ROC:': roc,
+            'test_data': {
+            'AUCROC:': roc_test,
             'y_probability': y_pro,
+            'y_labels': y_labels_test,
+            'AUPR': aupr_test},
+
+            'repurposeDB':{
+            'AUCROC': roc_repurpose,
+            'y_probability': y_pro_repurpose,
+            'y_labels': y_labels_repurpose,
+            'AUPR': aupr_repurpose
+            },
+
+            'repoDB':{
+            'AUCROC': roc_test,
+            'y_probability': y_pro_repo,
+            'y_labels': y_labels_repo,
+            'AUPR': aupr_repo
+            }
         }
     else:
         dm_roc, dm_yp, dm_pre = validate(logit_net, test_dm_vectors, test_dm_labels)
@@ -450,7 +473,7 @@ def _train_evaluate_generate_artifacts(
 
     with open(os.path.join(output_directory, 'validation.json'), 'w') as file:
         json.dump(roc_dict, file)
-    click.echo('Misson completed')
+    click.echo('Misson Completed')
 
 
 def run_edge2vec_subgraph(
@@ -658,28 +681,32 @@ def retrain(
             model = wv
             train_vectors = embedder_function(model, disease_modifying_training[:, 0:2])
             train_labels = disease_modifying_training[:, 2].tolist()
-            test_dm_vectors = embedder_function(model, disease_modifying[:, 0:2])
-            test_dm_labels = disease_modifying[:, 2].tolist()
-            test_ct_vectors = embedder_function(model, clinical_trials[:, 0:2])
-            test_ct_labels = clinical_trials[:, 2].tolist()
-            test_dc_vectors = embedder_function(model, drug_central[:, 0:2])
-            test_dc_labels = drug_central[:, 2].tolist()
-            test_sy_vectors = embedder_function(model, symptomatic[:, 0:2])
-            test_sy_labels = symptomatic[:, 2].tolist()
+
+            test_data = disease_modifying + clinical_trials + drug_central + symptomatic
+            df_test = pd.DataFrame(test_data, columns=['drug', 'disease', 'status'])
+            test_pos = df_test.loc[df_test['status']==1].to_numpy()
+            test_vectors = embedder_function(model, test_pos[:, 0:2])
+            test_labels = test_pos[:, 2].tolist()
+
+            with open(os.path.join(NOTEBOOK_DIRECTORY,'repurpose_overlap.json'), 'r') as file:
+                repurpose = json.load(file)
+            repo = pd.read_csv('repo_data.csv',index_col=False)
+            repurpose_vectors = np.array(embedder_function(wv, repurpose))
+            repurpose_labels = np.array([1]*len(repurpose))
+            repo_vectors = embedder_function(wv, repo.to_numpy()[:, 0:2])
+            repo_labels = repo.to_numpy()[:, 2]
             _train_evaluate_generate_artifacts(
                 subpath,
                 train_vectors,
                 train_labels,
-                test_dm_vectors,
-                test_dm_labels,
-                test_ct_vectors,
-                test_ct_labels,
-                test_dc_vectors,
-                test_dc_labels,
-                test_sy_vectors,
-                test_sy_labels,
+                test_vectors,
+                test_labels,
+                repurpose_vectors,
+                repurpose_labels,
+                repo_vectors,
+                repo_labels
             )
-            with open(os.path.join(subpath,'validation_fair.json'),'w') as file:
+
 
     logger.info(datetime.now())
 

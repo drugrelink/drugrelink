@@ -19,7 +19,7 @@ def train_logistic_regression(x, y) -> LogitNet:
     return logit_net
 
 
-def validate(logit_net: LogitNet, x, y) -> Tuple[float, List[float], List[int]]:
+def validate(logit_net: LogitNet, x, y) :
     x = np.array(x)
     y_pred_probab = logit_net.predict_proba(x)
     y_pred_labels = logit_net.predict(x)
@@ -28,5 +28,5 @@ def validate(logit_net: LogitNet, x, y) -> Tuple[float, List[float], List[int]]:
         for score in y_pred_probab
     ]
     roc = roc_auc_score(y, predicted_edge_probabilities)
-
-    return roc, y_pred_probab, y_pred_labels
+    aupr = average_precision_score(y,predicted_edge_probabilities)
+    return roc, y_pred_probab, y_pred_labels, aupr
