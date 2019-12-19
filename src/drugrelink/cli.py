@@ -33,8 +33,7 @@ def main(config: TextIO, debug: bool):
     config = json.load(config)
     # Get high level configuration
 
-    method = config['method']  # by default, use node2vec
-    graph_type = config.pop('graph_type', 'graph')  # by default, do the whole graph
+
     # Choose the appropriate function then pass the rest of the configuration there
     # using the splat operator
     if config.get('retrain'):
@@ -45,7 +44,8 @@ def main(config: TextIO, debug: bool):
         return predict(**config)
 
     elif config.get('method') and config.get('graph_type'):
-
+        method = config['method']  # by default, use node2vec
+        graph_type = config('graph_type')  # by default, do the whole graph
         if method == 'node2vec':
             config.pop('method')
             if graph_type == 'graph':
