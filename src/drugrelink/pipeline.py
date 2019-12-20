@@ -666,14 +666,17 @@ def retrain(
         output_directory: str,
         input_directory: str = None
 ):
+    print(NOTEBOOK_DIRECTORY)
+    with open(os.path.join(NOTEBOOK_DIRECTORY, 'repurpose_overlap.json'), 'r') as file:
+        repurpose = json.load(file)
+    print('yes')
     data_paths = get_data_paths(directory=input_directory)
     disease_modifying_training, disease_modifying, clinical_trials, drug_central, symptomatic = train_test_pairs(
         validation_path=data_paths.validate_data_path,
         symptomatic_path=data_paths.symptomatic_data_path,
         train_path=data_paths.transformed_features_path,
     )
-    with open(os.path.join(NOTEBOOK_DIRECTORY, 'repurpose_overlap.json'), 'r') as file:
-        repurpose = json.load(file)
+
     repo = pd.read_csv(os.path.join(NOTEBOOK_DIRECTORY, 'repo_data.csv'), index_col=False)
     for i, name in enumerate(os.listdir(output_directory), start=1):
 
