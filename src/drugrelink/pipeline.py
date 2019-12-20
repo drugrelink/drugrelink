@@ -410,28 +410,29 @@ def _train_evaluate_generate_artifacts(
     logger.info('validating logistic regression classifier')
     if not test_ct_vectors:
         roc_test, y_pro_test, y_labels_test, aupr_test = validate(logit_net, test_dm_vectors, test_dm_labels)
-        roc_repurpose, y_pro_repurpose, y_labels_repurpose, aupr_repurpose = validate(logit_net, repurpose_vectors, repurpose_labels)
+        roc_repurpose, y_pro_repurpose, y_labels_repurpose, aupr_repurpose = validate(logit_net, repurpose_vectors,
+                                                                                      repurpose_labels)
         roc_repo, y_pro_repo, y_labels_repo, aupr_repo = validate(logit_net, repo_vectors, repo_labels)
         y_pro = list(map(list, y_pro_test))
         roc_dict = {
             'test_data': {
-            'AUCROC:': roc_test,
-            'y_probability': y_pro,
-            'y_labels': y_labels_test,
-            'AUPR': aupr_test},
+                'AUCROC:': roc_test,
+                'y_probability': y_pro,
+                'y_labels': y_labels_test,
+                'AUPR': aupr_test},
 
-            'repurposeDB':{
-            'AUCROC': roc_repurpose,
-            'y_probability': y_pro_repurpose,
-            'y_labels': y_labels_repurpose,
-            'AUPR': aupr_repurpose
+            'repurposeDB': {
+                'AUCROC': roc_repurpose,
+                'y_probability': y_pro_repurpose,
+                'y_labels': y_labels_repurpose,
+                'AUPR': aupr_repurpose
             },
 
-            'repoDB':{
-            'AUCROC': roc_test,
-            'y_probability': y_pro_repo,
-            'y_labels': y_labels_repo,
-            'AUPR': aupr_repo
+            'repoDB': {
+                'AUCROC': roc_test,
+                'y_probability': y_pro_repo,
+                'y_labels': y_labels_repo,
+                'AUPR': aupr_repo
             }
         }
     else:
@@ -665,16 +666,22 @@ def retrain(
         output_directory: str,
         input_directory: str = None
 ):
+    data_paths = get_data_paths(directory=input_directory)
+    disease_modifying_training, disease_modifying, clinical_trials, drug_central, symptomatic = train_test_pairs(
+        validation_path=data_paths.validate_data_path,
+        symptomatic_path=data_paths.symptomatic_data_path,
+        train_path=data_paths.transformed_features_path,
+    )
+    with open(os.path.join(NOTEBOOK_DIRECTORY, 'repurpose_overlap.json'), 'r') as file:
+        repurpose = json.load(file)
+    repo = pd.read_csv(os.path.join(NOTEBOOK_DIRECTORY, 'repo_data.csv'), index_col=False)
     for i, name in enumerate(os.listdir(output_directory), start=1):
+
         if name in ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']:
             subpath = os.path.join(output_directory, name)
-            data_paths = get_data_paths(directory=input_directory)
+
             embedder_function = get_embedder('hadamard')
-            disease_modifying_training, disease_modifying, clinical_trials, drug_central, symptomatic = train_test_pairs(
-                validation_path=data_paths.validate_data_path,
-                symptomatic_path=data_paths.symptomatic_data_path,
-                train_path=data_paths.transformed_features_path,
-            )
+
             wv_path = os.path.join(subpath, 'word2vec_model.pickle')
             with open(wv_path, 'rb') as f:
                 wv = pickle.load(f)
@@ -682,17 +689,14 @@ def retrain(
             train_vectors = embedder_function(model, disease_modifying_training[:, 0:2])
             train_labels = disease_modifying_training[:, 2].tolist()
 
-            test_data = disease_modifying + clinical_trials + drug_central + symptomatic
+            test_data = disease_modifying.tolist() + clinical_trials.tolist() + drug_central.tolist() + symptomatic.tolist()
             df_test = pd.DataFrame(test_data, columns=['drug', 'disease', 'status'])
-            test_pos = df_test.loc[df_test['status']==1].to_numpy()
+            test_pos = df_test.loc[df_test['status'] == 1].to_numpy()
             test_vectors = embedder_function(model, test_pos[:, 0:2])
             test_labels = test_pos[:, 2].tolist()
 
-            with open(os.path.join(NOTEBOOK_DIRECTORY,'repurpose_overlap.json'), 'r') as file:
-                repurpose = json.load(file)
-            repo = pd.read_csv('repo_data.csv',index_col=False)
             repurpose_vectors = np.array(embedder_function(wv, repurpose))
-            repurpose_labels = np.array([1]*len(repurpose))
+            repurpose_labels = np.array([1] * len(repurpose))
             repo_vectors = embedder_function(wv, repo.to_numpy()[:, 0:2])
             repo_labels = repo.to_numpy()[:, 2]
             _train_evaluate_generate_artifacts(
@@ -706,7 +710,6 @@ def retrain(
                 repo_vectors,
                 repo_labels
             )
-
 
     logger.info(datetime.now())
 
