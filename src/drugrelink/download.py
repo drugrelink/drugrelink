@@ -35,6 +35,8 @@ TRANSFORMED_FEATURES_URL = 'https://github.com/dhimmel/learn/blob/master/predict
 VALIDATE_DATA_URL = 'https://raw.githubusercontent.com/dhimmel/learn/master/validate/validation-statuses.tsv'
 SYMPTOMATIC_DATA_URL = 'https://raw.githubusercontent.com/dhimmel/learn/master/prediction/predictions/probabilities.tsv'
 
+REPURPOSE_DATA_URL = 'https://raw.githubusercontent.com/drugrelink/drugrelink/master/notebooks/repurpose_overlap.json'
+REPO_DATA_URL = 'https://raw.githubusercontent.com/drugrelink/drugrelink/master/notebooks/repo_data.csv'
 
 @dataclass
 class DataPaths:
@@ -47,6 +49,8 @@ class DataPaths:
     symptomatic_data_path: str
     permutation_paths: List[str]
     data_edge2vec_path: str
+    repurpose_data_path: str
+    repo_data_path: str
 
 
 def get_data_paths(directory: Optional[str] = None) -> DataPaths:
@@ -81,6 +85,16 @@ def get_data_paths(directory: Optional[str] = None) -> DataPaths:
         logger.info(f'downloading {SYMPTOMATIC_DATA_URL}')
         urlretrieve(SYMPTOMATIC_DATA_URL, symptomatic_data_path)
 
+    repurpose_data_path = os.path.join(directory,'repurpose_overlap.json')
+    if not os.path.exists(repurpose_data_path):
+        logger.info(f'downloading {REPURPOSE_DATA_URL}')
+        urlretrieve(REPURPOSE_DATA_URL, repurpose_data_path)
+
+    repo_data_path = os.path.join(directory, 'repo_data.csv')
+    if not os.path.exists(repo_data_path):
+        logger.info(f'downloading {REPO_DATA_URL}')
+        urlretrieve(REPO_DATA_URL, repo_data_path)
+
     permutation_directory = os.path.join(directory, "permutations")
     os.makedirs(permutation_directory, exist_ok=True)
 
@@ -102,4 +116,6 @@ def get_data_paths(directory: Optional[str] = None) -> DataPaths:
         symptomatic_data_path=symptomatic_data_path,
         permutation_paths=permutation_paths,
         data_edge2vec_path=data_edge2vec_path,
+        repurpose_data_path = repurpose_data_path,
+        repo_data_path = repo_data_path
     )
