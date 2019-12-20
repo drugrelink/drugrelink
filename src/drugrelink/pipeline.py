@@ -666,10 +666,10 @@ def retrain(
         output_directory: str,
         input_directory: str = None
 ):
-    print(NOTEBOOK_DIRECTORY)
+    logger.info(NOTEBOOK_DIRECTORY)
     with open(os.path.join(NOTEBOOK_DIRECTORY, 'repurpose_overlap.json'), 'r') as file:
         repurpose = json.load(file)
-    print('yes')
+    logger.info('yes')
     data_paths = get_data_paths(directory=input_directory)
     disease_modifying_training, disease_modifying, clinical_trials, drug_central, symptomatic = train_test_pairs(
         validation_path=data_paths.validate_data_path,
