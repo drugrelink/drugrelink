@@ -666,6 +666,12 @@ def retrain(
         output_directory: str,
         input_directory: str = None
 ):
+    '''
+    Retrain and re-evaluate logistic regression models with different embeddings
+    :param output_directory: the directory contained embeddings and config file
+    :param input_directory: None
+    :return: logistic regression models
+    '''
     data_paths = get_data_paths(directory=input_directory)
     with open(data_paths.repurpose_data_path, 'r') as file:
         repurpose = json.load(file)
