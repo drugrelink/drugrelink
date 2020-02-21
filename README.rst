@@ -6,7 +6,8 @@ representation learning methods to compare learned features versus the
 topological features presented in [himmelstein2017]_.
 
 This package was developed during the master's thesis of
-`Lingling Xu <https://github.com/lingling93>`_.
+`Lingling Xu <https://github.com/lingling93>`_ under the supervision of
+`Dr. Charles Tapley Hoyt <https://github.com/cthoyt>`_.
 
 Installation
 ------------
